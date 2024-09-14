@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-depl
+spec:
+  replicas: 1
+  # this is how deployment going to find the pods
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      # this lable is going to ge applied to the pod
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: op40102/auth
+          # image: us.gcr.io/ticketing-dev-411602/auth
+          env:
+            - name: MONGO_URI
+              value: 'mongodb://auth-mongo-srv:27017/auth'
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-srv
+spec:
+  selector:
+    app: auth
+  ports:
+    - name: auth
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
