@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llvm-backend-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llvm-backend
+  template:
+    metadata:
+      labels:
+        app: llvm-backend
+    spec:
+      containers:
+        - name: llvm-backend
+          image: your-docker-registry/llvm-backend
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llvm-backend-srv
+spec:
+  selector:
+    app: llvm-backend
+  ports:
+    - name: llvm-backend
+      protocol: TCP
+      port: 3000
+      targetPort: 3000

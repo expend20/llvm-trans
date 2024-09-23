@@ -1,0 +1,23 @@
+{
+  "name": "llvm-backend",
+  "version": "1.0.0",
+  "description": "Backend service for LLVM compilation",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "tsx watch --clear-screen=false src/index.ts",
+    "test": "jest --watchAll --no-cache"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.21",
+    "express": "^4.17.1",
+    "express-async-errors": "^3.1.1",
+    "express-validator": "^7.2.0",
+    "body-parser": "^1.19.0",
+    "typescript": "^5.5.4",
+    "tsx": "^4.7.1"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.12",
+    "typescript": "^4.5.4"
+  }
+}

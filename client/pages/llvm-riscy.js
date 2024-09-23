@@ -3,14 +3,17 @@ import dynamic from 'next/dynamic'
 import { Button } from 'primereact/button'
 import { Dropdown } from 'primereact/dropdown'
 import { useTheme } from '../hooks/use-theme'
+import axios from 'axios'
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false })
 
 export default function LLVMRiscy() {
   const { theme } = useTheme()
-  const [inputLanguage, setInputLanguage] = useState('llvm')
+  const [inputLanguage, setInputLanguage] = useState('cpp')
   const [inputCode, setInputCode] = useState('')
   const [outputCode, setOutputCode] = useState('')
+  const [llvmVersion, setLlvmVersion] = useState('18')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleInputChange = useCallback((value) => {
     setInputCode(value || '')
@@ -20,10 +23,21 @@ export default function LLVMRiscy() {
     setInputLanguage(e.value ? 'cpp' : 'llvm')
   }, [])
 
-  const handleConvert = useCallback(() => {
-    // Stub function for conversion
-    setOutputCode(`Converted ${inputLanguage.toUpperCase()} code:\n${inputCode}`)
-  }, [inputLanguage, inputCode])
+  const handleConvert = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.post('/api/llvm/compile', {
+        code: inputCode,
+        llvmVersion
+      });
+      setOutputCode(response.data.llvmOutput);
+    } catch (error) {
+      console.error('Compilation failed:', error);
+      setOutputCode('Compilation failed. Please check your input and try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [inputCode, llvmVersion]);
 
   const [editorTheme, setEditorTheme] = useState('vs-light')
 
@@ -37,17 +51,28 @@ export default function LLVMRiscy() {
         <div className="w-full md:w-6 mb-2 md:mb-0 md:mr-2 flex flex-column">
           <div className="mb-2 flex justify-content-between align-items-center">
             <h2 className="text-xl font-bold">Input: {inputLanguage === 'llvm' ? 'LLVM Bitcode' : 'C/C++'}</h2>
-            <Dropdown
-              value={inputLanguage}
-              onChange={(e) => setInputLanguage(e.value)}
-              options={[
-                { label: 'LLVM', value: 'llvm' },
-                { label: 'C/C++', value: 'cpp' }
-              ]}
-              optionLabel="label"
-              placeholder="Select Language"
-              className="w-full md:w-14rem"
-            />
+            <div className="flex justify-content-between align-items-center">
+              <Dropdown
+                value={inputLanguage}
+                onChange={(e) => setInputLanguage(e.value)}
+                options={[
+                  { label: 'C/C++', value: 'cpp' }
+                ]}
+                optionLabel="label"
+                placeholder="Select Language"
+                className="w-full md:w-14rem mr-2"
+              />
+              <Dropdown
+                value={llvmVersion}
+                onChange={(e) => setLlvmVersion(e.value)}
+                options={[
+                  { label: 'LLVM 18', value: '18' }
+                ]}
+                optionLabel="label"
+                placeholder="Select LLVM Version"
+                className="w-full md:w-14rem"
+              />
+            </div>
           </div>
           <div className="flex-grow-1 overflow-hidden">
             <MonacoEditor
@@ -77,7 +102,12 @@ export default function LLVMRiscy() {
         </div>
       </div>
       <div className="p-2 mt-2">
-        <Button label="Convert" className="w-full p-button-raised p-button-primary" onClick={handleConvert} />
+        <Button 
+          label={isLoading ? 'Converting...' : 'Convert'} 
+          className="w-full p-button-raised p-button-primary" 
+          onClick={handleConvert}
+          disabled={isLoading}
+        />
       </div>
     </div>
   )

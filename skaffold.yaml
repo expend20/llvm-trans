@@ -11,7 +11,7 @@ build:
   # googleCloudBuild:
   #   projectId: ticketing-dev-411602
   artifacts:
-    - image: op40102/llvm-auth
+    - image: op40102/auth
     # - image: us.gcr.io/ticketing-dev-411602/auth
       context: auth
       docker:
@@ -30,4 +30,12 @@ build:
           - src: '**/*.js'
             dest: .
           - src: '**/*.css'
+            dest: .
+    - image: your-docker-registry/llvm-backend
+      context: llvm-backend
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.ts'
             dest: .
