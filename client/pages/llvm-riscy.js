@@ -5,12 +5,22 @@ import { Dropdown } from 'primereact/dropdown'
 import { useTheme } from '../hooks/use-theme'
 import axios from 'axios'
 
+// default code for cpp
+const defaultCppCode = `
+#include <stdio.h>
+
+int main() {
+  printf("Hello, World!");
+  return 0;
+}
+`;
+
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false })
 
 export default function LLVMRiscy() {
   const { theme } = useTheme()
   const [inputLanguage, setInputLanguage] = useState('cpp')
-  const [inputCode, setInputCode] = useState('')
+  const [inputCode, setInputCode] = useState(defaultCppCode)
   const [outputCode, setOutputCode] = useState('')
   const [llvmVersion, setLlvmVersion] = useState('18')
   const [isLoading, setIsLoading] = useState(false)
@@ -66,7 +76,9 @@ export default function LLVMRiscy() {
                 value={llvmVersion}
                 onChange={(e) => setLlvmVersion(e.value)}
                 options={[
-                  { label: 'LLVM 18', value: '18' }
+                  { label: 'LLVM 18', value: '18' },
+                  { label: 'LLVM 17', value: '17' },
+                  { label: 'LLVM 16', value: '16' }
                 ]}
                 optionLabel="label"
                 placeholder="Select LLVM Version"

@@ -11,10 +11,9 @@ const LandingPage = ({ currentUser }) => {
   );
 };
 
-// Update getInitialProps to fetch tickets
 LandingPage.getInitialProps = async ( context, client, currentUser ) => {
-  ensureSignedInWithRedirect(context, currentUser);
-  // ensure user is logged in
+  // currently this is exposed without any authentication
+  // ensureSignedInWithRedirect(context, currentUser);
   return {};
 };
 
