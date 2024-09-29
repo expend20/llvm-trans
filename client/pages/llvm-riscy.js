@@ -24,6 +24,7 @@ export default function LLVMRiscy() {
   const [outputCode, setOutputCode] = useState('')
   const [llvmVersion, setLlvmVersion] = useState('18')
   const [isLoading, setIsLoading] = useState(false)
+  const [runObfuscation, setRunObfuscation] = useState(true)
 
   const handleInputChange = useCallback((value) => {
     setInputCode(value || '')
@@ -38,8 +39,10 @@ export default function LLVMRiscy() {
     try {
       const response = await axios.post('/api/llvm/compile', {
         code: inputCode,
-        llvmVersion
+        llvmVersion,
+        runObfuscation
       });
+      console.log(`Received response: ${JSON.stringify(response.data)}`);
       setOutputCode(response.data.llvmOutput);
     } catch (error) {
       console.error('Compilation failed:', error);
@@ -47,7 +50,7 @@ export default function LLVMRiscy() {
     } finally {
       setIsLoading(false);
     }
-  }, [inputCode, llvmVersion]);
+  }, [inputCode, llvmVersion, runObfuscation]);
 
   const [editorTheme, setEditorTheme] = useState('vs-light')
 
@@ -84,6 +87,15 @@ export default function LLVMRiscy() {
                 placeholder="Select LLVM Version"
                 className="w-full md:w-14rem"
               />
+              <div className="flex align-items-center ml-2">
+                <label htmlFor="obfuscation-toggle" className="mr-2">Obfuscation:</label>
+                <input
+                  id="obfuscation-toggle"
+                  type="checkbox"
+                  checked={runObfuscation}
+                  onChange={(e) => setRunObfuscation(e.target.checked)}
+                />
+              </div>
             </div>
           </div>
           <div className="flex-grow-1 overflow-hidden">

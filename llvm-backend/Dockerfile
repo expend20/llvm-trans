@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     software-properties-common \
     wget \
-    sudo
+    sudo \
+    unzip
 
 RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
     apt-get install -y nodejs && \
@@ -22,6 +23,11 @@ RUN wget https://apt.llvm.org/llvm.sh && \
 RUN clang-16 --version && \
     clang-17 --version && \
     clang-18 --version
+
+# Download release .zip file https://github.com/expend20/llvm-ob-passes/releases/download/release-20240929011051/libpasses.zip
+RUN wget https://github.com/expend20/llvm-ob-passes/releases/download/release-20240929011051/libpasses.zip && \
+    unzip libpasses.zip -d /app && \
+    rm libpasses.zip
 
 WORKDIR /app
 
