@@ -34,6 +34,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
+RUN npm install -g nodemon ts-node
+
 COPY . .
 
-CMD ["npm", "start"]
+CMD ["nodemon", "--watch", "src", "--ext", "ts,json", "--exec", "ts-node", "src/index.ts"]
