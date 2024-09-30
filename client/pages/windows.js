@@ -1,12 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from 'primereact/button';
 import { ContextMenu } from 'primereact/contextmenu';
+import { Dropdown } from 'primereact/dropdown';
+import dynamic from 'next/dynamic';
+import axios from 'axios';
+import { useTheme } from '../hooks/use-theme';
+
+const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
+
+const SHADOW_SIZE = 10; // Adjust this value based on your shadow size
 
 export default function MultiWindowCppEditors() {
     const [windows, setWindows] = useState([
-        { id: 1, title: 'Window 1', x: 10, y: 10, width: 300, height: 200, minimized: false, maximized: false },
-        { id: 2, title: 'Window 2', x: 320, y: 10, width: 300, height: 200, minimized: false, maximized: false },
-        { id: 3, title: 'Window 3', x: 10, y: 220, width: 300, height: 200, minimized: false, maximized: false },
+        { id: 1, title: 'C++ input', x: 0, y: 0, width: '50%', height: '75%', minimized: false, maximized: false },
+        { id: 2, title: 'LLVM output', x: '50%', y: 0, width: '50%', height: '75%', minimized: false, maximized: false },
+        { id: 3, title: 'Console output', x: 0, y: '75%', width: '50%', height: '25%', minimized: false, maximized: false },
     ]);
 
     const containerRef = useRef(null);
@@ -15,6 +23,25 @@ export default function MultiWindowCppEditors() {
     const contextMenuRef = useRef(null);
     const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
     const [activeWindowId, setActiveWindowId] = useState(null);
+
+    const { theme } = useTheme();
+    const [inputCode, setInputCode] = useState(defaultCppCode);
+    const [outputCode, setOutputCode] = useState('');
+    const [consoleOutput, setConsoleOutput] = useState('');
+    const [llvmVersion, setLlvmVersion] = useState('18');
+    const [isLoading, setIsLoading] = useState(false);
+    const [runObfuscation, setRunObfuscation] = useState(true);
+    const [editorTheme, setEditorTheme] = useState('vs-light');
+
+    useEffect(() => {
+        setEditorTheme(theme === 'light' ? 'vs-light' : 'vs-dark');
+    }, [theme]);
+
+    useEffect(() => {
+        if (containerRef.current) {
+            resetWindowsLayout();
+        }
+    }, []);
 
     useEffect(() => {
         const handleMouseMove = (e) => {
@@ -65,7 +92,11 @@ export default function MultiWindowCppEditors() {
     const handleResize = (id, width, height) => {
         setWindows(prevWindows => prevWindows.map(window => {
             if (window.id === id) {
-                return { ...window, width: Math.max(width, 200), height: Math.max(height, 100) };
+                return { 
+                    ...window, 
+                    width: Math.max(width, 200 + SHADOW_SIZE * 2), 
+                    height: Math.max(height, 100 + SHADOW_SIZE * 2) 
+                };
             }
             
             // Check if this window is adjacent to the resizing window
@@ -155,25 +186,159 @@ export default function MultiWindowCppEditors() {
         });
     };
 
+    const toggleHide = (id) => {
+        setWindows(prevWindows => prevWindows.map(window =>
+            window.id === id ? { ...window, hidden: !window.hidden } : window
+        ));
+    };
+
     const contextMenuItems = [
-        { label: 'Bring to Front', icon: 'pi pi-chevron-up', command: () => bringToFront(activeWindowId) },
-        { label: 'Send to Back', icon: 'pi pi-chevron-down', command: () => sendToBack(activeWindowId) }
+        { 
+            label: 'Minimize', 
+            icon: 'pi pi-window-minimize', 
+            command: () => toggleMinimize(activeWindowId) 
+        },
+        { 
+            label: 'Maximize', 
+            icon: 'pi pi-window-maximize', 
+            command: () => toggleMaximize(activeWindowId) 
+        },
+        { 
+            label: 'Hide', 
+            icon: 'pi pi-eye-slash', 
+            command: () => toggleHide(activeWindowId) 
+        },
+        { separator: true },
+        { 
+            label: 'Bring to Front', 
+            icon: 'pi pi-chevron-up', 
+            command: () => bringToFront(activeWindowId) 
+        },
+        { 
+            label: 'Send to Back', 
+            icon: 'pi pi-chevron-down', 
+            command: () => sendToBack(activeWindowId) 
+        }
     ];
+
+    const handleInputChange = useCallback((value) => {
+        setInputCode(value || '');
+    }, []);
+
+    const handleConvert = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const response = await axios.post('/api/llvm/compile', {
+                code: inputCode,
+                llvmVersion,
+                runObfuscation
+            });
+            console.log(`Received response: ${JSON.stringify(response.data)}`);
+            setOutputCode(response.data.llvmOutput);
+            setConsoleOutput(response.data.executionOutput);
+        } catch (error) {
+            console.error('Compilation failed:', error);
+            setOutputCode('Compilation failed. Please check your input and try again.');
+            setConsoleOutput('Error: Compilation failed');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [inputCode, llvmVersion, runObfuscation]);
+
+    const toggleMaximizeMinimize = (id) => {
+        setWindows(prevWindows => prevWindows.map(window => {
+            if (window.id === id) {
+                if (window.maximized) {
+                    return { ...window, maximized: false };
+                } else if (window.minimized) {
+                    return { ...window, minimized: false };
+                } else {
+                    return { ...window, maximized: true };
+                }
+            }
+            return window;
+        }));
+    };
+
+    const resetWindowsLayout = () => {
+        if (containerRef.current) {
+            const containerWidth = containerRef.current.clientWidth;
+            const containerHeight = containerRef.current.clientHeight;
+
+            // Calculate available space after accounting for shadows
+            const availableWidth = containerWidth - SHADOW_SIZE * 2; // 3 shadows: left, middle, right
+            const availableHeight = containerHeight - SHADOW_SIZE * 2; // 3 shadows: top, middle, bottom
+
+            setWindows([
+                { 
+                    id: 1, 
+                    title: 'C++ input', 
+                    x: SHADOW_SIZE, 
+                    y: SHADOW_SIZE, 
+                    width: availableWidth * 0.5 - SHADOW_SIZE, 
+                    height: availableHeight * 0.75 - SHADOW_SIZE, 
+                    minimized: false, 
+                    maximized: false, 
+                    hidden: false 
+                },
+                { 
+                    id: 2, 
+                    title: 'LLVM output', 
+                    x: availableWidth * 0.5 + SHADOW_SIZE * 2, 
+                    y: SHADOW_SIZE, 
+                    width: availableWidth * 0.5 - SHADOW_SIZE, 
+                    height: availableHeight * 0.75 - SHADOW_SIZE, 
+                    minimized: false, 
+                    maximized: false, 
+                    hidden: false 
+                },
+                { 
+                    id: 3, 
+                    title: 'Console output', 
+                    x: SHADOW_SIZE, 
+                    y: availableHeight * 0.75 + SHADOW_SIZE * 2, 
+                    width: availableWidth * 0.5 - SHADOW_SIZE, 
+                    height: availableHeight * 0.25 - SHADOW_SIZE, 
+                    minimized: false, 
+                    maximized: false, 
+                    hidden: false 
+                },
+            ]);
+        }
+    };
 
     return (
         <>
-            <div className="sticky top-0 z-5 py-1 px-2 flex gap-3">
-                {windows.map((window) => (
-                    <span 
-                        key={window.id}
-                        className={`cursor-pointer text-sm ${window.minimized ? 'text-300' : 'text-primary'}`}
-                        onClick={() => toggleMinimize(window.id)}
-                    >
-                        {window.title}
-                    </span>
-                ))}
+            <div className="sticky top-0 z-5 py-1 px-2 flex gap-3 bg-surface-0">
+                <Dropdown
+                    value={llvmVersion}
+                    onChange={(e) => setLlvmVersion(e.value)}
+                    options={[
+                        { label: 'LLVM 18', value: '18' },
+                        { label: 'LLVM 17', value: '17' },
+                        { label: 'LLVM 16', value: '16' }
+                    ]}
+                    optionLabel="label"
+                    placeholder="Select LLVM Version"
+                    className="w-full md:w-14rem"
+                />
+                <div className="flex align-items-center ml-2">
+                    <label htmlFor="obfuscation-toggle" className="mr-2">Obfuscation:</label>
+                    <input
+                        id="obfuscation-toggle"
+                        type="checkbox"
+                        checked={runObfuscation}
+                        onChange={(e) => setRunObfuscation(e.target.checked)}
+                    />
+                </div>
+                <Button 
+                    label={isLoading ? 'Converting...' : 'Convert'} 
+                    className="p-button-raised p-button-primary" 
+                    onClick={handleConvert}
+                    disabled={isLoading}
+                />
             </div>
-            <div ref={containerRef} style={{ position: 'relative', width: '100%', height: 'calc(100vh - 50px)' }}>
+            <div ref={containerRef} style={{ position: 'relative', width: '100%', height: 'calc(100vh - 150px)' }}>
                 {windows.map((window) => (
                     <div
                         key={window.id}
@@ -183,7 +348,7 @@ export default function MultiWindowCppEditors() {
                             height: window.maximized ? '100%' : `${window.height}px`,
                             left: window.maximized ? '0' : `${window.x}px`,
                             top: window.maximized ? '0' : `${window.y}px`,
-                            display: window.minimized ? 'none' : 'block',
+                            display: window.minimized || window.hidden ? 'none' : 'block',
                             zIndex: windows.indexOf(window) + 1,
                         }}
                     >
@@ -198,6 +363,10 @@ export default function MultiWindowCppEditors() {
                             }}
                             onMouseDown={(e) => startDrag(e, window.id)}
                             onContextMenu={(e) => handleContextMenu(e, window.id)}
+                            onDoubleClick={(e) => {
+                                e.stopPropagation();
+                                toggleMaximizeMinimize(window.id);
+                            }}
                         >
                             <span className="ml-2 font-semibold">{window.title}</span>
                             <div className="flex">
@@ -219,8 +388,38 @@ export default function MultiWindowCppEditors() {
                                 />
                             </div>
                         </div>
-                        <div className="surface-0 p-2 h-full">
-                            Content for {window.title}
+                        <div className="surface-0 h-full">
+                            {window.id === 1 && (
+                                <MonacoEditor
+                                    language="cpp"
+                                    value={inputCode}
+                                    onChange={handleInputChange}
+                                    theme={editorTheme}
+                                    options={{
+                                        minimap: { enabled: false },
+                                        fontSize: 14,
+                                    }}
+                                    className="h-full"
+                                />
+                            )}
+                            {window.id === 2 && (
+                                <MonacoEditor
+                                    language="llvm"
+                                    value={outputCode}
+                                    theme={editorTheme}
+                                    options={{ readOnly: true, minimap: { enabled: false }, fontSize: 14 }}
+                                    className="h-full"
+                                />
+                            )}
+                            {window.id === 3 && (
+                                <MonacoEditor
+                                    language="plaintext"
+                                    value={consoleOutput}
+                                    theme={editorTheme}
+                                    options={{ readOnly: true, minimap: { enabled: false }, fontSize: 14 }}
+                                    className="h-full"
+                                />
+                            )}
                         </div>
                         <div 
                             className="absolute right-0 cursor-ew-resize"
@@ -264,6 +463,32 @@ export default function MultiWindowCppEditors() {
                 ))}
             </div>
             <ContextMenu model={contextMenuItems} ref={contextMenuRef} />
+            <div className="fixed bottom-0 left-0 right-0 z-5 py-1 px-2 flex gap-3 bg-surface-0">
+                <div className="flex-grow flex gap-3">
+                    {windows.map((window) => (
+                        <span 
+                            key={window.id}
+                            className={`cursor-pointer text-sm ${window.minimized || window.hidden ? 'text-300' : 'text-primary'}`}
+                            onClick={() => {
+                                if (window.hidden) toggleHide(window.id);
+                                else toggleMinimize(window.id);
+                            }}
+                        >
+                            {window.title}
+                        </span>
+                    ))}
+                </div>
+            </div>
         </>
     );
 }
+
+// Default C++ code
+const defaultCppCode = `
+#include <stdio.h>
+
+int main() {
+  printf("Hello, World!");
+  return 0;
+}
+`;
