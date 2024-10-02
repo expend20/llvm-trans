@@ -32,8 +32,8 @@ export default function MultiWindowCppEditors() {
     const [showOptionsDialog, setShowOptionsDialog] = useState(false);
     const [obfuscationOptions, setObfuscationOptions] = useState({
         enabled: false,
-        option1: false,
-        option2: false
+        option1: 'none',
+        option2: 'none'
     });
 
     useEffect(() => {
@@ -298,11 +298,15 @@ export default function MultiWindowCppEditors() {
         }
     };
 
-    const toggleObfuscationOption = (option) => {
-        setObfuscationOptions(prev => ({
-            ...prev,
-            [option]: !prev[option]
-        }));
+    const toggleObfuscationOption = (option, value) => {
+        setObfuscationOptions(prev => {
+            const newOptions = { ...prev, [option]: value };
+            // Reset option2 if option1 is set to 'none'
+            if (option === 'option1' && value === 'none') {
+                newOptions.option2 = 'none';
+            }
+            return newOptions;
+        });
     };
 
     return (
@@ -483,35 +487,57 @@ export default function MultiWindowCppEditors() {
                             className="w-full md:w-14rem"
                         />
                     </div>
-                    <div className="flex align-items-center justify-content-between">
-                        <label htmlFor="obfuscation" className="font-bold">Obfuscation</label>
-                        <InputSwitch
-                            id="obfuscation"
-                            checked={obfuscationOptions.enabled}
-                            onChange={(e) => toggleObfuscationOption('enabled')}
-                        />
-                    </div>
-                    <div className="flex align-items-center justify-content-between">
-                        <label htmlFor="option1" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
-                            Option 1
-                        </label>
-                        <Checkbox
-                            id="option1"
-                            onChange={(e) => toggleObfuscationOption('option1')}
-                            checked={obfuscationOptions.option1}
-                            disabled={!obfuscationOptions.enabled}
-                        />
-                    </div>
-                    <div className="flex align-items-center justify-content-between">
-                        <label htmlFor="option2" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
-                            Option 2
-                        </label>
-                        <Checkbox
-                            id="option2"
-                            onChange={(e) => toggleObfuscationOption('option2')}
-                            checked={obfuscationOptions.option2}
-                            disabled={!obfuscationOptions.enabled}
-                        />
+                    <div className="flex flex-column gap-2">
+                        <div className="flex align-items-center justify-content-between">
+                            <label htmlFor="obfuscation" className="font-bold">Obfuscation</label>
+                            <InputSwitch
+                                id="obfuscation"
+                                checked={obfuscationOptions.enabled}
+                                onChange={(e) => toggleObfuscationOption('enabled', e.value)}
+                            />
+                        </div>
+                        <div className="ml-4 flex flex-column gap-2">
+                            <div className="flex align-items-center justify-content-between">
+                                <label htmlFor="option1" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
+                                    Option 1
+                                </label>
+                                <Dropdown
+                                    id="option1"
+                                    value={obfuscationOptions.option1}
+                                    onChange={(e) => toggleObfuscationOption('option1', e.value)}
+                                    options={[
+                                        { label: 'None', value: 'none' },
+                                        { label: 'Low', value: 'low' },
+                                        { label: 'Medium', value: 'medium' },
+                                        { label: 'High', value: 'high' }
+                                    ]}
+                                    optionLabel="label"
+                                    placeholder="Select Option 1"
+                                    className="w-full md:w-14rem"
+                                    disabled={!obfuscationOptions.enabled}
+                                />
+                            </div>
+                            <div className="ml-4 flex align-items-center justify-content-between">
+                                <label htmlFor="option2" className={obfuscationOptions.enabled && obfuscationOptions.option1 !== 'none' ? '' : 'text-color-secondary'}>
+                                    Option 2
+                                </label>
+                                <Dropdown
+                                    id="option2"
+                                    value={obfuscationOptions.option2}
+                                    onChange={(e) => toggleObfuscationOption('option2', e.value)}
+                                    options={[
+                                        { label: 'None', value: 'none' },
+                                        { label: 'Type A', value: 'typeA' },
+                                        { label: 'Type B', value: 'typeB' },
+                                        { label: 'Type C', value: 'typeC' }
+                                    ]}
+                                    optionLabel="label"
+                                    placeholder="Select Option 2"
+                                    className="w-full md:w-14rem"
+                                    disabled={!obfuscationOptions.enabled || obfuscationOptions.option1 === 'none'}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </Dialog>
