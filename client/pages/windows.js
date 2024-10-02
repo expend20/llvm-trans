@@ -308,18 +308,6 @@ export default function MultiWindowCppEditors() {
     return (
         <>
             <div className="sticky top-0 z-5 py-1 px-2 flex gap-3 bg-surface-0">
-                <Dropdown
-                    value={llvmVersion}
-                    onChange={(e) => setLlvmVersion(e.value)}
-                    options={[
-                        { label: 'LLVM 18', value: '18' },
-                        { label: 'LLVM 17', value: '17' },
-                        { label: 'LLVM 16', value: '16' }
-                    ]}
-                    optionLabel="label"
-                    placeholder="Select LLVM Version"
-                    className="w-full md:w-14rem"
-                />
                 <Button 
                     label="Options" 
                     icon="pi pi-cog" 
@@ -473,11 +461,28 @@ export default function MultiWindowCppEditors() {
                 </div>
             </div>
             <Dialog 
-                header="Compilation Options" 
+                header="Transformation Options" 
                 visible={showOptionsDialog} 
                 onHide={() => setShowOptionsDialog(false)}
+                style={{ width: '50%' }}
             >
                 <div className="flex flex-column gap-4">
+                    <div className="flex align-items-center justify-content-between">
+                        <label htmlFor="llvmVersion" className="font-bold">LLVM Version</label>
+                        <Dropdown
+                            id="llvmVersion"
+                            value={llvmVersion}
+                            onChange={(e) => setLlvmVersion(e.value)}
+                            options={[
+                                { label: 'LLVM 18', value: '18' },
+                                { label: 'LLVM 17', value: '17' },
+                                { label: 'LLVM 16', value: '16' }
+                            ]}
+                            optionLabel="label"
+                            placeholder="Select LLVM Version"
+                            className="w-full md:w-14rem"
+                        />
+                    </div>
                     <div className="flex align-items-center justify-content-between">
                         <label htmlFor="obfuscation" className="font-bold">Obfuscation</label>
                         <InputSwitch
