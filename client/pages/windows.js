@@ -502,6 +502,7 @@ export default function MultiWindowCppEditors() {
                                 if (window.hidden) toggleHide(window.id);
                                 else toggleMinimize(window.id);
                             }}
+                            onContextMenu={(e) => handleContextMenu(e, window.id)}
                         >
                             {window.title}
                         </span>
