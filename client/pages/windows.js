@@ -173,13 +173,6 @@ export default function MultiWindowCppEditors() {
         });
     };
 
-    const handleContextMenu = (e, id) => {
-        e.preventDefault();
-        setContextMenuPosition({ x: e.clientX, y: e.clientY });
-        setActiveWindowId(id);
-        contextMenuRef.current.show(e);
-    };
-
     const bringToFront = (id) => {
         setWindows(prevWindows => {
             const window = prevWindows.find(w => w.id === id);
@@ -197,34 +190,55 @@ export default function MultiWindowCppEditors() {
     };
 
     const toggleHide = (id) => {
-        setWindows(prevWindows => prevWindows.map(window =>
-            window.id === id ? { ...window, hidden: !window.hidden } : window
-        ));
+        setWindows(prevWindows => {
+            const updatedWindows = prevWindows.map(window =>
+                window.id === id ? { ...window, hidden: !window.hidden } : window
+            );
+            
+            // If the active window is being hidden, set activeWindowId to null
+            if (id === activeWindowId && !updatedWindows.find(w => w.id === id).hidden) {
+                setActiveWindowId(null);
+            }
+            
+            return updatedWindows;
+        });
     };
 
-    const contextMenuItems = [
-        { 
-            label: 'Hide', 
-            icon: 'pi pi-eye-slash', 
-            command: () => toggleHide(activeWindowId) 
-        },
-        { 
-            label: 'Maximize', 
-            icon: 'pi pi-window-maximize', 
-            command: () => toggleMaximize(activeWindowId) 
-        },
-        { separator: true },
-        { 
-            label: 'Bring to Front', 
-            icon: 'pi pi-chevron-up', 
-            command: () => bringToFront(activeWindowId) 
-        },
-        { 
-            label: 'Send to Back', 
-            icon: 'pi pi-chevron-down', 
-            command: () => sendToBack(activeWindowId) 
-        }
-    ];
+    const getContextMenuItems = useCallback((windowId) => {
+        const window = windows.find(w => w.id === windowId);
+        if (!window) return []; // Return an empty array if no window is found
+
+        return [
+            { 
+                label: window.hidden ? 'Show' : 'Hide', 
+                icon: 'pi pi-minus',
+                command: () => toggleHide(windowId) 
+            },
+            { 
+                label: window.maximized ? 'Restore' : 'Maximize', 
+                icon: window.maximized ? 'pi pi-window-minimize' : 'pi pi-window-maximize', 
+                command: () => toggleMaximize(windowId) 
+            },
+            { separator: true },
+            { 
+                label: 'Bring to Front', 
+                icon: 'pi pi-chevron-up', 
+                command: () => bringToFront(windowId) 
+            },
+            { 
+                label: 'Send to Back', 
+                icon: 'pi pi-chevron-down', 
+                command: () => sendToBack(windowId) 
+            }
+        ];
+    }, [windows, toggleHide, toggleMaximize, bringToFront, sendToBack]);
+
+    const handleContextMenu = (e, id) => {
+        e.preventDefault();
+        setContextMenuPosition({ x: e.clientX, y: e.clientY });
+        setActiveWindowId(id);
+        contextMenuRef.current.show(e);
+    };
 
     const handleInputChange = useCallback((value) => {
         setInputCode(value || '');
@@ -478,7 +492,7 @@ export default function MultiWindowCppEditors() {
                     </div>
                 ))}
             </div>
-            <ContextMenu model={contextMenuItems} ref={contextMenuRef} />
+            <ContextMenu model={getContextMenuItems(activeWindowId)} ref={contextMenuRef} />
             <div className="fixed bottom-0 left-0 right-0 z-5 py-1 px-2 flex gap-3 bg-surface-0">
                 <div className="flex-grow flex gap-3">
                     {windows.map((window) => (
