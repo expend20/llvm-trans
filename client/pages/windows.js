@@ -5,23 +5,21 @@ import { Dropdown } from 'primereact/dropdown';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
 import { useTheme } from '../hooks/use-theme';
+import { Dialog } from 'primereact/dialog';
+import { InputSwitch } from 'primereact/inputswitch';
+import { Checkbox } from 'primereact/checkbox';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
 const SHADOW_SIZE = 10; // Adjust this value based on your shadow size
 
 export default function MultiWindowCppEditors() {
-    const [windows, setWindows] = useState([
-        { id: 1, title: 'C++ input', x: 0, y: 0, width: '50%', height: '75%', minimized: false, maximized: false },
-        { id: 2, title: 'LLVM output', x: '50%', y: 0, width: '50%', height: '75%', minimized: false, maximized: false },
-        { id: 3, title: 'Console output', x: 0, y: '75%', width: '50%', height: '25%', minimized: false, maximized: false },
-    ]);
+    const [windows, setWindows] = useState([]);
 
     const containerRef = useRef(null);
     const dragRef = useRef(null);
     const resizeRef = useRef(null);
     const contextMenuRef = useRef(null);
-    const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
     const [activeWindowId, setActiveWindowId] = useState(null);
 
     const { theme } = useTheme();
@@ -30,8 +28,13 @@ export default function MultiWindowCppEditors() {
     const [consoleOutput, setConsoleOutput] = useState('');
     const [llvmVersion, setLlvmVersion] = useState('18');
     const [isLoading, setIsLoading] = useState(false);
-    const [runObfuscation, setRunObfuscation] = useState(true);
     const [editorTheme, setEditorTheme] = useState('vs-light');
+    const [showOptionsDialog, setShowOptionsDialog] = useState(false);
+    const [obfuscationOptions, setObfuscationOptions] = useState({
+        enabled: false,
+        option1: false,
+        option2: false
+    });
 
     useEffect(() => {
         setEditorTheme(theme === 'light' ? 'vs-light' : 'vs-dark');
@@ -81,14 +84,6 @@ export default function MultiWindowCppEditors() {
         );
     };
 
-    const updateWindowSize = (id, width, height) => {
-        setWindows(prevWindows =>
-            prevWindows.map(window =>
-                window.id === id ? { ...window, width, height } : window
-            )
-        );
-    };
-
     const handleResize = (id, width, height) => {
         setWindows(prevWindows => prevWindows.map(window => {
             if (window.id === id) {
@@ -99,41 +94,8 @@ export default function MultiWindowCppEditors() {
                 };
             }
             
-            // Check if this window is adjacent to the resizing window
-            const resizingWindow = prevWindows.find(w => w.id === id);
-            if (resizingWindow && isAdjacent(resizingWindow, window)) {
-                const newSize = getNewSize(resizingWindow, window, { width, height });
-                return { ...window, ...newSize };
-            }
-            
-            // If not adjacent, keep the window's current size
             return window;
         }));
-    };
-
-    const isAdjacent = (window1, window2) => {
-        const horizontalOverlap = (window1.y < window2.y + window2.height) && (window1.y + window1.height > window2.y);
-        const verticalOverlap = (window1.x < window2.x + window2.width) && (window1.x + window1.width > window2.x);
-        return horizontalOverlap || verticalOverlap;
-    };
-
-    const getNewSize = (resizingWindow, adjacentWindow, newSize) => {
-        let width = adjacentWindow.width;
-        let height = adjacentWindow.height;
-
-        if (resizingWindow.x + resizingWindow.width === adjacentWindow.x) {
-            width = Math.max(adjacentWindow.x + adjacentWindow.width - (resizingWindow.x + newSize.width), 200);
-        } else if (resizingWindow.x === adjacentWindow.x + adjacentWindow.width) {
-            width = Math.max(resizingWindow.x - adjacentWindow.x, 200);
-        }
-
-        if (resizingWindow.y + resizingWindow.height === adjacentWindow.y) {
-            height = Math.max(adjacentWindow.y + adjacentWindow.height - (resizingWindow.y + newSize.height), 100);
-        } else if (resizingWindow.y === adjacentWindow.y + adjacentWindow.height) {
-            height = Math.max(resizingWindow.y - adjacentWindow.y, 100);
-        }
-
-        return { width, height };
     };
 
     const startDrag = (e, id) => {
@@ -235,7 +197,6 @@ export default function MultiWindowCppEditors() {
 
     const handleContextMenu = (e, id) => {
         e.preventDefault();
-        setContextMenuPosition({ x: e.clientX, y: e.clientY });
         setActiveWindowId(id);
         contextMenuRef.current.show(e);
     };
@@ -250,7 +211,7 @@ export default function MultiWindowCppEditors() {
             const response = await axios.post('/api/llvm/compile', {
                 code: inputCode,
                 llvmVersion,
-                runObfuscation
+                runObfuscation: obfuscationOptions.enabled,
             });
             console.log(`Received response: ${JSON.stringify(response.data)}`);
             setOutputCode(response.data.llvmOutput);
@@ -262,7 +223,7 @@ export default function MultiWindowCppEditors() {
         } finally {
             setIsLoading(false);
         }
-    }, [inputCode, llvmVersion, runObfuscation]);
+    }, [inputCode, llvmVersion, obfuscationOptions]);
 
     const toggleMaximizeMinimize = (id) => {
         setWindows(prevWindows => {
@@ -317,7 +278,7 @@ export default function MultiWindowCppEditors() {
                     x: availableWidth * 0.5 + SHADOW_SIZE * 2, 
                     y: SHADOW_SIZE, 
                     width: availableWidth * 0.5 - SHADOW_SIZE, 
-                    height: availableHeight * 0.75 - SHADOW_SIZE, 
+                    height: availableHeight * 1, 
                     minimized: false, 
                     maximized: false, 
                     hidden: false 
@@ -337,6 +298,13 @@ export default function MultiWindowCppEditors() {
         }
     };
 
+    const toggleObfuscationOption = (option) => {
+        setObfuscationOptions(prev => ({
+            ...prev,
+            [option]: !prev[option]
+        }));
+    };
+
     return (
         <>
             <div className="sticky top-0 z-5 py-1 px-2 flex gap-3 bg-surface-0">
@@ -352,15 +320,12 @@ export default function MultiWindowCppEditors() {
                     placeholder="Select LLVM Version"
                     className="w-full md:w-14rem"
                 />
-                <div className="flex align-items-center ml-2">
-                    <label htmlFor="obfuscation-toggle" className="mr-2">Obfuscation:</label>
-                    <input
-                        id="obfuscation-toggle"
-                        type="checkbox"
-                        checked={runObfuscation}
-                        onChange={(e) => setRunObfuscation(e.target.checked)}
-                    />
-                </div>
+                <Button 
+                    label="Options" 
+                    icon="pi pi-cog" 
+                    onClick={() => setShowOptionsDialog(true)}
+                    className="p-button-outlined"
+                />
                 <Button 
                     label={isLoading ? 'Converting...' : 'Convert'} 
                     className="p-button-raised p-button-primary" 
@@ -507,6 +472,44 @@ export default function MultiWindowCppEditors() {
                     ))}
                 </div>
             </div>
+            <Dialog 
+                header="Compilation Options" 
+                visible={showOptionsDialog} 
+                onHide={() => setShowOptionsDialog(false)}
+            >
+                <div className="flex flex-column gap-4">
+                    <div className="flex align-items-center justify-content-between">
+                        <label htmlFor="obfuscation" className="font-bold">Obfuscation</label>
+                        <InputSwitch
+                            id="obfuscation"
+                            checked={obfuscationOptions.enabled}
+                            onChange={(e) => toggleObfuscationOption('enabled')}
+                        />
+                    </div>
+                    <div className="flex align-items-center justify-content-between">
+                        <label htmlFor="option1" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
+                            Option 1
+                        </label>
+                        <Checkbox
+                            id="option1"
+                            onChange={(e) => toggleObfuscationOption('option1')}
+                            checked={obfuscationOptions.option1}
+                            disabled={!obfuscationOptions.enabled}
+                        />
+                    </div>
+                    <div className="flex align-items-center justify-content-between">
+                        <label htmlFor="option2" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
+                            Option 2
+                        </label>
+                        <Checkbox
+                            id="option2"
+                            onChange={(e) => toggleObfuscationOption('option2')}
+                            checked={obfuscationOptions.option2}
+                            disabled={!obfuscationOptions.enabled}
+                        />
+                    </div>
+                </div>
+            </Dialog>
         </>
     );
 }
