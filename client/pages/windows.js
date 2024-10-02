@@ -495,7 +495,7 @@ export default function MultiWindowCppEditors() {
             <ContextMenu model={getContextMenuItems(activeWindowId)} ref={contextMenuRef} />
             <div className="fixed bottom-0 left-0 right-0 z-5 py-1 px-2 flex gap-3 bg-surface-0">
                 <div className="flex-grow flex gap-3">
-                    {windows.map((window) => (
+                    {windows.sort((a, b) => a.id - b.id).map((window) => (
                         <span 
                             key={window.id}
                             className={`cursor-pointer text-sm ${window.hidden ? 'text-300' : 'text-primary'}`}
