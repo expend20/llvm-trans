@@ -151,12 +151,6 @@ export default function MultiWindowCppEditors() {
         }
     };
 
-    const toggleMinimize = (id) => {
-        setWindows(prevWindows => prevWindows.map(window => 
-            window.id === id ? { ...window, minimized: !window.minimized } : window
-        ));
-    };
-
     const toggleMaximize = (id) => {
         setWindows(prevWindows => {
             const updatedWindows = prevWindows.map(window => {
@@ -210,19 +204,14 @@ export default function MultiWindowCppEditors() {
 
     const contextMenuItems = [
         { 
-            label: 'Minimize', 
-            icon: 'pi pi-window-minimize', 
-            command: () => toggleMinimize(activeWindowId) 
+            label: 'Hide', 
+            icon: 'pi pi-eye-slash', 
+            command: () => toggleHide(activeWindowId) 
         },
         { 
             label: 'Maximize', 
             icon: 'pi pi-window-maximize', 
             command: () => toggleMaximize(activeWindowId) 
-        },
-        { 
-            label: 'Hide', 
-            icon: 'pi pi-eye-slash', 
-            command: () => toggleHide(activeWindowId) 
         },
         { separator: true },
         { 
@@ -267,8 +256,6 @@ export default function MultiWindowCppEditors() {
                 if (window.id === id) {
                     if (window.maximized) {
                         return { ...window, maximized: false };
-                    } else if (window.minimized) {
-                        return { ...window, minimized: false };
                     } else {
                         return { ...window, maximized: true };
                     }
@@ -377,7 +364,7 @@ export default function MultiWindowCppEditors() {
                             height: window.maximized ? '100%' : `${window.height}px`,
                             left: window.maximized ? '0' : `${window.x}px`,
                             top: window.maximized ? '0' : `${window.y}px`,
-                            display: window.minimized || window.hidden ? 'none' : 'block',
+                            display: window.hidden ? 'none' : 'block',
                             zIndex: windows.indexOf(window) + 1,
                         }}
                     >
@@ -404,7 +391,7 @@ export default function MultiWindowCppEditors() {
                                     style={{ cursor: 'pointer' }} 
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        toggleMinimize(window.id);
+                                        toggleHide(window.id);
                                     }} 
                                 />
                                 <i 
@@ -497,11 +484,8 @@ export default function MultiWindowCppEditors() {
                     {windows.map((window) => (
                         <span 
                             key={window.id}
-                            className={`cursor-pointer text-sm ${window.minimized || window.hidden ? 'text-300' : 'text-primary'}`}
-                            onClick={() => {
-                                if (window.hidden) toggleHide(window.id);
-                                else toggleMinimize(window.id);
-                            }}
+                            className={`cursor-pointer text-sm ${window.hidden ? 'text-300' : 'text-primary'}`}
+                            onClick={() => toggleHide(window.id)}
                             onContextMenu={(e) => handleContextMenu(e, window.id)}
                         >
                             {window.title}
