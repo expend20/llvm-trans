@@ -158,9 +158,25 @@ export default function MultiWindowCppEditors() {
     };
 
     const toggleMaximize = (id) => {
-        setWindows(prevWindows => prevWindows.map(window => 
-            window.id === id ? { ...window, maximized: !window.maximized } : window
-        ));
+        setWindows(prevWindows => {
+            const updatedWindows = prevWindows.map(window => {
+                if (window.id === id) {
+                    return { ...window, maximized: !window.maximized };
+                }
+                return window;
+            });
+
+            const maximizedWindow = updatedWindows.find(w => w.id === id);
+            if (maximizedWindow && maximizedWindow.maximized) {
+                // If the window is being maximized, bring it to front
+                return [
+                    ...updatedWindows.filter(w => w.id !== id),
+                    maximizedWindow
+                ];
+            }
+
+            return updatedWindows;
+        });
     };
 
     const handleContextMenu = (e, id) => {
@@ -246,18 +262,31 @@ export default function MultiWindowCppEditors() {
     }, [inputCode, llvmVersion, runObfuscation]);
 
     const toggleMaximizeMinimize = (id) => {
-        setWindows(prevWindows => prevWindows.map(window => {
-            if (window.id === id) {
-                if (window.maximized) {
-                    return { ...window, maximized: false };
-                } else if (window.minimized) {
-                    return { ...window, minimized: false };
-                } else {
-                    return { ...window, maximized: true };
+        setWindows(prevWindows => {
+            const updatedWindows = prevWindows.map(window => {
+                if (window.id === id) {
+                    if (window.maximized) {
+                        return { ...window, maximized: false };
+                    } else if (window.minimized) {
+                        return { ...window, minimized: false };
+                    } else {
+                        return { ...window, maximized: true };
+                    }
                 }
+                return window;
+            });
+
+            const updatedWindow = updatedWindows.find(w => w.id === id);
+            if (updatedWindow && updatedWindow.maximized) {
+                // If the window is being maximized, bring it to front
+                return [
+                    ...updatedWindows.filter(w => w.id !== id),
+                    updatedWindow
+                ];
             }
-            return window;
-        }));
+
+            return updatedWindows;
+        });
     };
 
     const resetWindowsLayout = () => {
