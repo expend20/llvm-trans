@@ -32,8 +32,12 @@ export default function MultiWindowCppEditors() {
     const [showOptionsDialog, setShowOptionsDialog] = useState(false);
     const [obfuscationOptions, setObfuscationOptions] = useState({
         enabled: false,
-        option1: 'none',
-        option2: 'none'
+        pluto_bogus_control_flow: false,
+        pluto_flattening: false,
+        pluto_global_encryption: false,
+        pluto_indirect_call: false,
+        pluto_mba_obfuscation: false,
+        pluto_substitution: false,
     });
 
     useEffect(() => {
@@ -211,7 +215,7 @@ export default function MultiWindowCppEditors() {
             const response = await axios.post('/api/llvm/compile', {
                 code: inputCode,
                 llvmVersion,
-                runObfuscation: obfuscationOptions.enabled,
+                obfuscationOptions,
             });
             console.log(`Received response: ${JSON.stringify(response.data)}`);
             setOutputCode(response.data.llvmOutput);
@@ -489,7 +493,7 @@ export default function MultiWindowCppEditors() {
                     </div>
                     <div className="flex flex-column gap-2">
                         <div className="flex align-items-center justify-content-between">
-                            <label htmlFor="obfuscation" className="font-bold">Obfuscation</label>
+                            <label htmlFor="obfuscation" className="font-bold">Obfuscation Pluto</label>
                             <InputSwitch
                                 id="obfuscation"
                                 checked={obfuscationOptions.enabled}
@@ -498,43 +502,69 @@ export default function MultiWindowCppEditors() {
                         </div>
                         <div className="ml-4 flex flex-column gap-2">
                             <div className="flex align-items-center justify-content-between">
-                                <label htmlFor="option1" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
-                                    Option 1
+                                <label htmlFor="pluto_bogus_control_flow" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
+                                    Bogus Control Flow
                                 </label>
-                                <Dropdown
-                                    id="option1"
-                                    value={obfuscationOptions.option1}
-                                    onChange={(e) => toggleObfuscationOption('option1', e.value)}
-                                    options={[
-                                        { label: 'None', value: 'none' },
-                                        { label: 'Low', value: 'low' },
-                                        { label: 'Medium', value: 'medium' },
-                                        { label: 'High', value: 'high' }
-                                    ]}
-                                    optionLabel="label"
-                                    placeholder="Select Option 1"
-                                    className="w-full md:w-14rem"
+                                <InputSwitch
+                                    id="pluto_bogus_control_flow"
+                                    checked={obfuscationOptions.pluto_bogus_control_flow}
+                                    onChange={(e) => toggleObfuscationOption('pluto_bogus_control_flow', e.value)}
                                     disabled={!obfuscationOptions.enabled}
                                 />
                             </div>
-                            <div className="ml-4 flex align-items-center justify-content-between">
-                                <label htmlFor="option2" className={obfuscationOptions.enabled && obfuscationOptions.option1 !== 'none' ? '' : 'text-color-secondary'}>
-                                    Option 2
+                            <div className="flex align-items-center justify-content-between">
+                                <label htmlFor="pluto_flattening" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
+                                    Flattening
                                 </label>
-                                <Dropdown
-                                    id="option2"
-                                    value={obfuscationOptions.option2}
-                                    onChange={(e) => toggleObfuscationOption('option2', e.value)}
-                                    options={[
-                                        { label: 'None', value: 'none' },
-                                        { label: 'Type A', value: 'typeA' },
-                                        { label: 'Type B', value: 'typeB' },
-                                        { label: 'Type C', value: 'typeC' }
-                                    ]}
-                                    optionLabel="label"
-                                    placeholder="Select Option 2"
-                                    className="w-full md:w-14rem"
-                                    disabled={!obfuscationOptions.enabled || obfuscationOptions.option1 === 'none'}
+                                <InputSwitch
+                                    id="pluto_flattening"
+                                    checked={obfuscationOptions.pluto_flattening}
+                                    onChange={(e) => toggleObfuscationOption('pluto_flattening', e.value)}
+                                    disabled={!obfuscationOptions.enabled}
+                                />
+                            </div>
+                            <div className="flex align-items-center justify-content-between">
+                                <label htmlFor="pluto_global_encryption" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
+                                    Global Encryption
+                                </label>
+                                <InputSwitch
+                                    id="pluto_global_encryption"
+                                    checked={obfuscationOptions.pluto_global_encryption}
+                                    onChange={(e) => toggleObfuscationOption('pluto_global_encryption', e.value)}
+                                    disabled={true} /* fixme */
+                                />
+                            </div>
+                            <div className="flex align-items-center justify-content-between">
+                                <label htmlFor="pluto_indirect_call" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
+                                    Indirect Call
+                                </label>
+                                <InputSwitch
+                                    id="pluto_indirect_call"    
+                                    checked={obfuscationOptions.pluto_indirect_call}
+                                    onChange={(e) => toggleObfuscationOption('pluto_indirect_call', e.value)}
+                                    disabled={true} /* fixme */
+                                />
+                            </div>
+                            <div className="flex align-items-center justify-content-between">
+                                <label htmlFor="pluto_mba_obfuscation" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
+                                    MBA Obfuscation
+                                </label>            
+                                <InputSwitch
+                                    id="pluto_mba_obfuscation"
+                                    checked={obfuscationOptions.pluto_mba_obfuscation}
+                                    onChange={(e) => toggleObfuscationOption('pluto_mba_obfuscation', e.value)}
+                                    disabled={true} /* fixme */
+                                />
+                            </div>
+                            <div className="flex align-items-center justify-content-between">
+                                <label htmlFor="pluto_substitution" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
+                                    Substitution
+                                </label>
+                                <InputSwitch
+                                    id="pluto_substitution"
+                                    checked={obfuscationOptions.pluto_substitution}
+                                    onChange={(e) => toggleObfuscationOption('pluto_substitution', e.value)}
+                                    disabled={true} /* fixme */
                                 />
                             </div>
                         </div>

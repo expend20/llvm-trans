@@ -9,7 +9,7 @@ app.use(json());
 
 app.post('/api/llvm/compile', async (req, res) => {
   console.log(`Received request: ${JSON.stringify(req.body)}`);
-  const { code, llvmVersion, runObfuscation } = req.body;
+  const { code, llvmVersion, obfuscationOptions } = req.body;
 
   if (!code) {
     return res.status(400).json({ error: 'No code provided' });
@@ -18,7 +18,7 @@ app.post('/api/llvm/compile', async (req, res) => {
   const inputFile = path.join('/tmp', `input_${Date.now()}.cpp`);
   const llvmIRFile = path.join('/tmp', `output_${Date.now()}.ll`);
   const obfuscatedFile = path.join('/tmp', `obfuscated_${Date.now()}.ll`);
-  const executableFile = path.join('/tmp', `executable_${Date.now()}`);
+  const executableFile = path.join('/tmp', `executable_${Date.now()}.out`);
 
   try {
     await fs.writeFile(inputFile, code);
@@ -32,20 +32,30 @@ app.post('/api/llvm/compile', async (req, res) => {
     const llvmInitialCompilation = compilationResult.output;
     nextStageFile = llvmIRFile;
 
-    let llvmOutput;
     let executionOutput;
-    if (runObfuscation) {
-      const optCommand = `opt-${llvmVersion} -load-pass-plugin=/app/libpasses-${llvmVersion}.so -passes pluto-bogus-control-flow ${llvmIRFile} -S -o ${obfuscatedFile} -debug-pass-manager`;
+    let filesToDelete: string[] = [inputFile, llvmIRFile];
+
+    let passes: string[] = [];
+    if (obfuscationOptions.pluto_bogus_control_flow) {
+      passes.push('pluto-bogus-control-flow');
+    }
+    if (obfuscationOptions.pluto_flattening) {
+      passes.push('pluto-flattening');
+    }
+
+    if (obfuscationOptions.enabled) {
+
+      const optCommand = `opt-${llvmVersion} -load-pass-plugin=/app/libpasses-${llvmVersion}.so -passes "${passes.join(',')}" ${llvmIRFile} -S -o ${obfuscatedFile} -debug-pass-manager`;
       const obfuscationResult = await executeCommand(optCommand);
       if (obfuscationResult.error) {
         return res.status(500).json(obfuscationResult);
       }
       nextStageFile = obfuscatedFile;
-      llvmOutput = await fs.readFile(obfuscatedFile, 'utf-8');
+      filesToDelete.push(obfuscatedFile);
     } else {
       nextStageFile = llvmIRFile;
-      llvmOutput = await fs.readFile(llvmIRFile, 'utf-8');
     }
+    const llvmOutput = await fs.readFile(nextStageFile, 'utf-8');
 
     // Link the object file to create an executable
     const linkCommand = `clang-${llvmVersion} ${nextStageFile} -o ${executableFile}`;
@@ -62,12 +72,7 @@ app.post('/api/llvm/compile', async (req, res) => {
     res.json({ llvmInitialCompilation, llvmOutput, executionOutput });
 
     // Clean up temporary files
-    await Promise.all([
-      fs.unlink(inputFile),
-      fs.unlink(llvmIRFile),
-      fs.unlink(executableFile),
-      runObfuscation ? fs.unlink(obfuscatedFile) : Promise.resolve(),
-    ]);
+    await Promise.all(filesToDelete.map(file => fs.unlink(file)));
   } catch (err) {
     console.error(`Error: ${err}`);
     res.status(500).json({ error: 'Internal server error' });

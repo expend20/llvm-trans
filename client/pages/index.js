@@ -1,5 +1,4 @@
 import React from 'react';
-import LLVMRiscy from './llvm-riscy';
 import ensureSignedInWithRedirect from '../api/redirect-to-signin';
 import MultiWindowCppEditors from './windows';
 
