@@ -8,6 +8,7 @@ import { useTheme } from '../hooks/use-theme';
 import { Dialog } from 'primereact/dialog';
 import { InputSwitch } from 'primereact/inputswitch';
 import { Checkbox } from 'primereact/checkbox';
+import ObfuscationOptionsDialog from '../components/ObfuscationOptionsDialog';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
@@ -470,109 +471,14 @@ export default function MultiWindowCppEditors() {
                     ))}
                 </div>
             </div>
-            <Dialog 
-                header="Transformation Options" 
+            <ObfuscationOptionsDialog 
                 visible={showOptionsDialog} 
                 onHide={() => setShowOptionsDialog(false)}
-                style={{ width: '50%' }}
-            >
-                <div className="flex flex-column gap-4">
-                    <div className="flex align-items-center justify-content-between">
-                        <label htmlFor="llvmVersion" className="font-bold">LLVM Version</label>
-                        <Dropdown
-                            id="llvmVersion"
-                            value={llvmVersion}
-                            onChange={(e) => setLlvmVersion(e.value)}
-                            options={[
-                                { label: 'LLVM 18', value: '18' },
-                                { label: 'LLVM 17', value: '17' },
-                                { label: 'LLVM 16', value: '16' }
-                            ]}
-                            optionLabel="label"
-                            placeholder="Select LLVM Version"
-                            className="w-full md:w-14rem"
-                        />
-                    </div>
-                    <div className="flex flex-column gap-2">
-                        <div className="flex align-items-center justify-content-between">
-                            <label htmlFor="obfuscation" className="font-bold">Obfuscation Pluto</label>
-                            <InputSwitch
-                                id="obfuscation"
-                                checked={obfuscationOptions.enabled}
-                                onChange={(e) => toggleObfuscationOption('enabled', e.value)}
-                            />
-                        </div>
-                        <div className="ml-4 flex flex-column gap-2">
-                            <div className="flex align-items-center justify-content-between">
-                                <label htmlFor="pluto_bogus_control_flow" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
-                                    Bogus Control Flow
-                                </label>
-                                <InputSwitch
-                                    id="pluto_bogus_control_flow"
-                                    checked={obfuscationOptions.pluto_bogus_control_flow}
-                                    onChange={(e) => toggleObfuscationOption('pluto_bogus_control_flow', e.value)}
-                                    disabled={!obfuscationOptions.enabled}
-                                />
-                            </div>
-                            <div className="flex align-items-center justify-content-between">
-                                <label htmlFor="pluto_flattening" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
-                                    Flattening
-                                </label>
-                                <InputSwitch
-                                    id="pluto_flattening"
-                                    checked={obfuscationOptions.pluto_flattening}
-                                    onChange={(e) => toggleObfuscationOption('pluto_flattening', e.value)}
-                                    disabled={!obfuscationOptions.enabled}
-                                />
-                            </div>
-                            <div className="flex align-items-center justify-content-between">
-                                <label htmlFor="pluto_global_encryption" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
-                                    Global Encryption
-                                </label>
-                                <InputSwitch
-                                    id="pluto_global_encryption"
-                                    checked={obfuscationOptions.pluto_global_encryption}
-                                    onChange={(e) => toggleObfuscationOption('pluto_global_encryption', e.value)}
-                                    disabled={true} /* fixme */
-                                />
-                            </div>
-                            <div className="flex align-items-center justify-content-between">
-                                <label htmlFor="pluto_indirect_call" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
-                                    Indirect Call
-                                </label>
-                                <InputSwitch
-                                    id="pluto_indirect_call"    
-                                    checked={obfuscationOptions.pluto_indirect_call}
-                                    onChange={(e) => toggleObfuscationOption('pluto_indirect_call', e.value)}
-                                    disabled={true} /* fixme */
-                                />
-                            </div>
-                            <div className="flex align-items-center justify-content-between">
-                                <label htmlFor="pluto_mba_obfuscation" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
-                                    MBA Obfuscation
-                                </label>            
-                                <InputSwitch
-                                    id="pluto_mba_obfuscation"
-                                    checked={obfuscationOptions.pluto_mba_obfuscation}
-                                    onChange={(e) => toggleObfuscationOption('pluto_mba_obfuscation', e.value)}
-                                    disabled={true} /* fixme */
-                                />
-                            </div>
-                            <div className="flex align-items-center justify-content-between">
-                                <label htmlFor="pluto_substitution" className={obfuscationOptions.enabled ? '' : 'text-color-secondary'}>
-                                    Substitution
-                                </label>
-                                <InputSwitch
-                                    id="pluto_substitution"
-                                    checked={obfuscationOptions.pluto_substitution}
-                                    onChange={(e) => toggleObfuscationOption('pluto_substitution', e.value)}
-                                    disabled={true} /* fixme */
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </Dialog>
+                llvmVersion={llvmVersion}
+                setLlvmVersion={setLlvmVersion}
+                obfuscationOptions={obfuscationOptions}
+                toggleObfuscationOption={toggleObfuscationOption}
+            />
         </>
     );
 }
