@@ -218,7 +218,9 @@ export default function MultiWindowCppEditors() {
                 obfuscationOptions,
             });
             console.log(`Received response: ${JSON.stringify(response.data)}`);
-            setOutputCode(response.data.llvmOutput);
+            // take the last obfuscation result (array)
+            const lastObfuscationResult = response.data.obfuscationResults[response.data.obfuscationResults.length - 1];
+            setOutputCode(lastObfuscationResult.output);
             setConsoleOutput(response.data.executionOutput);
         } catch (error) {
             console.error('Compilation failed:', error);

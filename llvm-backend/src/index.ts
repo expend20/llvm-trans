@@ -16,49 +16,56 @@ app.post('/api/llvm/compile', async (req, res) => {
   }
 
   const inputFile = path.join('/tmp', `input_${Date.now()}.cpp`);
-  const llvmIRFile = path.join('/tmp', `output_${Date.now()}.ll`);
-  const obfuscatedFile = path.join('/tmp', `obfuscated_${Date.now()}.ll`);
+  let nextStageIRFile = path.join('/tmp', `input_${Date.now()}.ll`);
   const executableFile = path.join('/tmp', `executable_${Date.now()}.out`);
 
   try {
     await fs.writeFile(inputFile, code);
-    let nextStageFile;
 
-    const clangCommand = `clang-${llvmVersion} -O1 -S -emit-llvm ${inputFile} -o ${llvmIRFile}`;
+    const clangCommand = `clang-${llvmVersion} -O1 -S -emit-llvm ${inputFile} -o ${nextStageIRFile}`;
     const compilationResult = await executeCommand(clangCommand);
     if (compilationResult.error) {
       return res.status(500).json(compilationResult);
     }
-    const llvmInitialCompilation = compilationResult.output;
-    nextStageFile = llvmIRFile;
+
+    let results: { name: string, output: string }[] = [];
+    results.push({ name: 'original', output: await fs.readFile(nextStageIRFile, 'utf-8') });
 
     let executionOutput;
-    let filesToDelete: string[] = [inputFile, llvmIRFile];
-
-    let passes: string[] = [];
-    if (obfuscationOptions.pluto_bogus_control_flow) {
-      passes.push('pluto-bogus-control-flow');
-    }
-    if (obfuscationOptions.pluto_flattening) {
-      passes.push('pluto-flattening');
-    }
+    let filesToDelete: string[] = [inputFile, nextStageIRFile];
 
     if (obfuscationOptions.enabled) {
 
-      const optCommand = `opt-${llvmVersion} -load-pass-plugin=/app/libpasses-${llvmVersion}.so -passes "${passes.join(',')}" ${llvmIRFile} -S -o ${obfuscatedFile} -debug-pass-manager`;
-      const obfuscationResult = await executeCommand(optCommand);
-      if (obfuscationResult.error) {
-        return res.status(500).json(obfuscationResult);
+      if (obfuscationOptions.pluto_bogus_control_flow) {
+        const newIRFile = path.join('/tmp', `obfuscated_pluto_bogus_control_flow_${Date.now()}.ll`);
+        const optCommand = `opt-${llvmVersion} -load-pass-plugin=/app/libpasses-${llvmVersion}.so -passes "pluto-bogus-control-flow" ${nextStageIRFile} -S -o ${newIRFile} -debug-pass-manager`;
+        const obfuscationResult = await executeCommand(optCommand);
+        if (obfuscationResult.error) {
+          return res.status(500).json(obfuscationResult);
+        }
+        const outputFileContent = await fs.readFile(newIRFile, 'utf-8');
+        results.push({ name: 'pluto_bogus_control_flow', output: outputFileContent });
+        nextStageIRFile = newIRFile;
+        filesToDelete.push(newIRFile);
       }
-      nextStageFile = obfuscatedFile;
-      filesToDelete.push(obfuscatedFile);
-    } else {
-      nextStageFile = llvmIRFile;
+      
+      if (obfuscationOptions.pluto_flattening) {
+        const newIRFile = path.join('/tmp', `obfuscated_pluto_flattening_${Date.now()}.ll`);
+        const optCommand = `opt-${llvmVersion} -load-pass-plugin=/app/libpasses-${llvmVersion}.so -passes "pluto-flattening" ${nextStageIRFile} -S -o ${newIRFile} -debug-pass-manager`;
+        const obfuscationResult = await executeCommand(optCommand);
+        if (obfuscationResult.error) {
+          return res.status(500).json(obfuscationResult);
+        }
+        const outputFileContent = await fs.readFile(newIRFile, 'utf-8');
+        results.push({ name: 'pluto_flattening', output: outputFileContent });
+        nextStageIRFile = newIRFile;
+        filesToDelete.push(newIRFile);
+      }
+
     }
-    const llvmOutput = await fs.readFile(nextStageFile, 'utf-8');
 
     // Link the object file to create an executable
-    const linkCommand = `clang-${llvmVersion} ${nextStageFile} -o ${executableFile}`;
+    const linkCommand = `clang-${llvmVersion} ${nextStageIRFile} -o ${executableFile}`;
     const linkResult = await executeCommand(linkCommand);
     if (linkResult.error) {
       return res.status(500).json(linkResult);
@@ -69,7 +76,7 @@ app.post('/api/llvm/compile', async (req, res) => {
     executionOutput = executeResult.output || executeResult.error;
     console.log(`Execution output: ${executionOutput}`);
 
-    res.json({ llvmInitialCompilation, llvmOutput, executionOutput });
+    res.json({ obfuscationResults: results, executionOutput });
 
     // Clean up temporary files
     await Promise.all(filesToDelete.map(file => fs.unlink(file)));
