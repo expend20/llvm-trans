@@ -406,7 +406,7 @@ export default function MultiWindowCppEditors() {
                             )}
                             {window.id === 2 && (
                                 <MonacoEditor
-                                    language="llvm"
+                                    language="cpp"
                                     value={outputCode}
                                     theme={editorTheme}
                                     options={{ readOnly: true, minimap: { enabled: false }, fontSize: 14 }}
