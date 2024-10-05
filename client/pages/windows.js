@@ -5,10 +5,8 @@ import { Dropdown } from 'primereact/dropdown';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
 import { useTheme } from '../hooks/use-theme';
-import { Dialog } from 'primereact/dialog';
-import { InputSwitch } from 'primereact/inputswitch';
-import { Checkbox } from 'primereact/checkbox';
 import ObfuscationOptionsDialog from '../components/ObfuscationOptionsDialog';
+import ObfuscationStagesDialog from '../components/ObfuscationStagesDialog';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
@@ -32,14 +30,16 @@ export default function MultiWindowCppEditors() {
     const [editorTheme, setEditorTheme] = useState('vs-light');
     const [showOptionsDialog, setShowOptionsDialog] = useState(false);
     const [obfuscationOptions, setObfuscationOptions] = useState({
-        enabled: false,
-        pluto_bogus_control_flow: false,
-        pluto_flattening: false,
-        pluto_global_encryption: false,
-        pluto_indirect_call: false,
-        pluto_mba_obfuscation: false,
-        pluto_substitution: false,
+        enabled: true,
+        pluto_bogus_control_flow: true,
+        pluto_flattening: true,
+        pluto_global_encryption: true,
+        pluto_indirect_call: true,
+        pluto_mba_obfuscation: true,
+        pluto_substitution: true,
     });
+    const [showObfuscationStagesDialog, setShowObfuscationStagesDialog] = useState(false);
+    const [obfuscationResults, setObfuscationResults] = useState([]);
 
     useEffect(() => {
         setEditorTheme(theme === 'light' ? 'vs-light' : 'vs-dark');
@@ -219,6 +219,7 @@ export default function MultiWindowCppEditors() {
                 obfuscationOptions,
             });
             console.log(`Received response: ${JSON.stringify(response.data)}`);
+            setObfuscationResults(response.data.obfuscationResults);
             // take the last obfuscation result (array)
             const lastObfuscationResult = response.data.obfuscationResults[response.data.obfuscationResults.length - 1];
             setOutputCode(lastObfuscationResult.output);
@@ -318,7 +319,7 @@ export default function MultiWindowCppEditors() {
 
     return (
         <>
-            <div className="sticky top-0 z-5 py-1 px-2 flex gap-3 bg-surface-0">
+            <div className="sticky mt-2 top-0 z-5 py-1 px-2 flex gap-3 bg-surface-0">
                 <Button 
                     label="Options" 
                     icon="pi pi-cog" 
@@ -327,9 +328,16 @@ export default function MultiWindowCppEditors() {
                 />
                 <Button 
                     label={isLoading ? 'Converting...' : 'Convert'} 
+                    icon="pi pi-play"
                     className="p-button-raised p-button-primary" 
                     onClick={handleConvert}
                     disabled={isLoading}
+                />
+                <Button 
+                    label="Explore pipeline" 
+                    icon="pi pi-chart-line" 
+                    onClick={() => setShowObfuscationStagesDialog(true)}
+                    className="p-button-outlined"
                 />
             </div>
             <div ref={containerRef} style={{ position: 'relative', width: '100%', height: 'calc(100vh - 150px)' }}>
@@ -478,6 +486,11 @@ export default function MultiWindowCppEditors() {
                 setLlvmVersion={setLlvmVersion}
                 obfuscationOptions={obfuscationOptions}
                 toggleObfuscationOption={toggleObfuscationOption}
+            />
+            <ObfuscationStagesDialog
+                visible={showObfuscationStagesDialog}
+                onHide={() => setShowObfuscationStagesDialog(false)}
+                obfuscationResults={obfuscationResults}
             />
         </>
     );
