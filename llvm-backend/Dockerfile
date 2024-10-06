@@ -24,8 +24,8 @@ RUN clang-16 --version && \
     clang-17 --version && \
     clang-18 --version
 
-# Download release .zip file https://github.com/expend20/llvm-ob-passes/releases/download/release-20241004034000/libpasses.zip
-RUN wget https://github.com/expend20/llvm-ob-passes/releases/download/release-20241004034000/libpasses.zip && \
+# Download release .zip file https://github.com/expend20/llvm-ob-passes/releases/download/release-20241006010927/libpasses.zip
+RUN wget https://github.com/expend20/llvm-ob-passes/releases/download/release-20241006010927/libpasses.zip && \
     unzip libpasses.zip -d /app && \
     rm libpasses.zip
 

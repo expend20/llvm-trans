@@ -60,10 +60,17 @@ export default function ObfuscationOptionsDialog({
                             disabled={!obfuscationOptions.enabled}
                         /> 
                         <ObfuscationOption
-                            id="pluto_spaghetti"
-                            label="Spaghetti"
-                            checked={obfuscationOptions.pluto_spaghetti}
-                            onChange={(e) => toggleObfuscationOption('pluto_spaghetti', e.value)}
+                            id="pluto_global_encryption"
+                            label="Global Encryption"
+                            checked={obfuscationOptions.pluto_global_encryption}
+                            onChange={(e) => toggleObfuscationOption('pluto_global_encryption', e.value)}
+                            disabled={!obfuscationOptions.enabled}
+                        />
+                        <ObfuscationOption
+                            id="pluto_indirect_call"
+                            label="Indirect Call"
+                            checked={obfuscationOptions.pluto_indirect_call}
+                            onChange={(e) => toggleObfuscationOption('pluto_indirect_call', e.value)}
                             disabled={!obfuscationOptions.enabled}
                         />
                     </div>

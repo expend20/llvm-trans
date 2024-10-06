@@ -27,7 +27,6 @@ export default function MultiWindowCppEditors() {
     const [consoleOutput, setConsoleOutput] = useState('');
     const [llvmVersion, setLlvmVersion] = useState('18');
     const [isLoading, setIsLoading] = useState(false);
-    const [editorTheme, setEditorTheme] = useState('vs-light');
     const [showOptionsDialog, setShowOptionsDialog] = useState(false);
     const [obfuscationOptions, setObfuscationOptions] = useState({
         enabled: true,
@@ -35,15 +34,9 @@ export default function MultiWindowCppEditors() {
         pluto_flattening: true,
         pluto_global_encryption: true,
         pluto_indirect_call: true,
-        pluto_mba_obfuscation: true,
-        pluto_substitution: true,
     });
     const [showObfuscationStagesDialog, setShowObfuscationStagesDialog] = useState(false);
     const [obfuscationResults, setObfuscationResults] = useState([]);
-
-    useEffect(() => {
-        setEditorTheme(theme === 'light' ? 'vs-light' : 'vs-dark');
-    }, [theme]);
 
     useEffect(() => {
         if (containerRef.current) {
@@ -396,7 +389,7 @@ export default function MultiWindowCppEditors() {
                                     language="cpp"
                                     value={inputCode}
                                     onChange={handleInputChange}
-                                    theme={editorTheme}
+                                    theme={theme === 'light' ? 'vs' : 'vs-dark'}
                                     options={{
                                         minimap: { enabled: false },
                                         fontSize: 14,
@@ -408,7 +401,7 @@ export default function MultiWindowCppEditors() {
                                 <MonacoEditor
                                     language="cpp"
                                     value={outputCode}
-                                    theme={editorTheme}
+                                    theme={theme === 'light' ? 'vs' : 'vs-dark'}
                                     options={{ readOnly: true, minimap: { enabled: false }, fontSize: 14 }}
                                     className="h-full"
                                 />
@@ -417,7 +410,7 @@ export default function MultiWindowCppEditors() {
                                 <MonacoEditor
                                     language="plaintext"
                                     value={consoleOutput}
-                                    theme={editorTheme}
+                                    theme={theme === 'light' ? 'vs' : 'vs-dark'}
                                     options={{ readOnly: true, minimap: { enabled: false }, fontSize: 14 }}
                                     className="h-full"
                                 />
@@ -500,8 +493,14 @@ export default function MultiWindowCppEditors() {
 const defaultCppCode = `
 #include <stdio.h>
 
-int main() {
+__attribute__((noinline)) // to showcase indirect call feature
+static void test_func()
+{
   printf("Hello, World!");
+}
+
+int main() {
+  test_func();
   return 0;
 }
 `;
