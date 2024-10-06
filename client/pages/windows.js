@@ -316,24 +316,30 @@ export default function MultiWindowCppEditors() {
         <>
             <div className="sticky mt-2 top-0 z-5 py-1 px-2 flex gap-3 bg-surface-0">
                 <Button 
-                    label="Options" 
                     icon="pi pi-cog" 
                     onClick={() => setShowOptionsDialog(true)}
                     className="p-button-outlined"
-                />
+                    iconPos="left"
+                >
+                    <span className="ml-2 hidden sm:inline font-semibold">Options</span>
+                </Button>
                 <Button 
-                    label={isLoading ? 'Converting...' : 'Convert'} 
                     icon="pi pi-play"
                     className="p-button-raised p-button-primary" 
                     onClick={handleConvert}
                     disabled={isLoading}
-                />
+                    iconPos="left"
+                >
+                    <span className="ml-2 hidden sm:inline font-semibold">{isLoading ? 'Converting...' : 'Convert'}</span>
+                </Button>
                 <Button 
-                    label="Explore pipeline" 
                     icon="pi pi-chart-line" 
                     onClick={() => setShowObfuscationStagesDialog(true)}
                     className="p-button-outlined"
-                />
+                    iconPos="left"
+                >
+                    <span className="ml-2 hidden sm:inline font-semibold">Explore pipeline</span>
+                </Button>
             </div>
             <div ref={containerRef} style={{ position: 'relative', width: '100%', height: 'calc(100vh - 150px)' }}>
                 {windows.map((window) => (
