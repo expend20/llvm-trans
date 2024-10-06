@@ -44,12 +44,12 @@ export default function ObfuscationStagesDialog({ visible, onHide, obfuscationRe
         >
             {obfuscationResults.length > 0 ? (
                 <div className="flex flex-column h-full">
-                    <div className="flex justify-content-center mb-3">
+                    <div className="flex flex-wrap justify-content-center mb-3 mt-2">
                         {obfuscationResults.map((_, index) => (
                             <Button
                                 key={index}
                                 label={obfuscationResults[index].name}
-                                className={`mr-2 mt-1 ${activeIndex === index ? 'p-button-outlined' : 'p-button-text'}`}
+                                className={`mr-2 mb-2 ${activeIndex === index ? 'p-button-outlined' : 'p-button-text'}`}
                                 onClick={() => setActiveIndex(index)}
                             />
                         ))}

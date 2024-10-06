@@ -34,6 +34,8 @@ export default function MultiWindowCppEditors() {
         pluto_flattening: true,
         pluto_global_encryption: true,
         pluto_indirect_call: true,
+        pluto_mba_obfuscation: true,
+        pluto_substitution: true,
     });
     const [showObfuscationStagesDialog, setShowObfuscationStagesDialog] = useState(false);
     const [obfuscationResults, setObfuscationResults] = useState([]);

@@ -87,6 +87,32 @@ app.post('/api/llvm/compile', async (req, res) => {
         nextStageIRFile = newIRFile;
         filesToDelete.push(newIRFile);
       }
+
+      if (obfuscationOptions.pluto_mba_obfuscation) {
+        const newIRFile = path.join('/tmp', `obfuscated_pluto_mba_obfuscation_${Date.now()}.ll`);
+        const optCommand = `opt-${llvmVersion} -load-pass-plugin=/app/libpasses-${llvmVersion}.so -passes "pluto-mba-obfuscation" ${nextStageIRFile} -S -o ${newIRFile} -debug-pass-manager`;
+        const obfuscationResult = await executeCommand(optCommand);
+        if (obfuscationResult.error) {
+          return res.status(500).json(obfuscationResult);
+        }
+        const outputFileContent = await fs.readFile(newIRFile, 'utf-8');
+        results.push({ name: 'pluto_mba_obfuscation', output: outputFileContent });
+        nextStageIRFile = newIRFile;
+        filesToDelete.push(newIRFile);
+      }
+
+      if (obfuscationOptions.pluto_substitution) {
+        const newIRFile = path.join('/tmp', `obfuscated_pluto_substitution_${Date.now()}.ll`);
+        const optCommand = `opt-${llvmVersion} -load-pass-plugin=/app/libpasses-${llvmVersion}.so -passes "pluto-substitution" ${nextStageIRFile} -S -o ${newIRFile} -debug-pass-manager`;
+        const obfuscationResult = await executeCommand(optCommand);
+        if (obfuscationResult.error) {
+          return res.status(500).json(obfuscationResult);
+        }
+        const outputFileContent = await fs.readFile(newIRFile, 'utf-8');
+        results.push({ name: 'pluto_substitution', output: outputFileContent });
+        nextStageIRFile = newIRFile;
+        filesToDelete.push(newIRFile);
+      }
     }
 
     // Link the object file to create an executable

@@ -16,11 +16,10 @@ export default function ObfuscationOptionsDialog({
             header="Transformation Options" 
             visible={visible} 
             onHide={onHide}
-            style={{ width: '50%' }}
         >
             <div className="flex flex-column gap-4">
                 <div className="flex align-items-center justify-content-between">
-                    <label htmlFor="llvmVersion" className="font-bold">LLVM Version</label>
+                    <label htmlFor="llvmVersion" className="font-bold mr-2">LLVM Version</label>
                     <Dropdown
                         id="llvmVersion"
                         value={llvmVersion}
@@ -37,7 +36,7 @@ export default function ObfuscationOptionsDialog({
                 </div>
                 <div className="flex flex-column gap-2">
                     <div className="flex align-items-center justify-content-between">
-                        <label htmlFor="obfuscation" className="font-bold">Obfuscation Pluto</label>
+                        <label htmlFor="obfuscation" className="font-bold">Obfuscation: Pluto</label>
                         <InputSwitch
                             id="obfuscation"
                             checked={obfuscationOptions.enabled}
@@ -71,6 +70,20 @@ export default function ObfuscationOptionsDialog({
                             label="Indirect Call"
                             checked={obfuscationOptions.pluto_indirect_call}
                             onChange={(e) => toggleObfuscationOption('pluto_indirect_call', e.value)}
+                            disabled={!obfuscationOptions.enabled}
+                        />
+                        <ObfuscationOption
+                            id="pluto-mba-obfuscation"
+                            label="MBA Obfuscation"
+                            checked={obfuscationOptions.pluto_mba_obfuscation}
+                            onChange={(e) => toggleObfuscationOption('pluto_mba_obfuscation', e.value)}
+                            disabled={!obfuscationOptions.enabled}
+                        />
+                        <ObfuscationOption
+                            id="pluto-substitution"
+                            label="Substitution"
+                            checked={obfuscationOptions.pluto_substitution}
+                            onChange={(e) => toggleObfuscationOption('pluto_substitution', e.value)}
                             disabled={!obfuscationOptions.enabled}
                         />
                     </div>
