@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import dynamic from 'next/dynamic';
+import { useTheme } from '../hooks/use-theme';
 
 const MonacoDiffEditor = dynamic(() => import('@monaco-editor/react').then(mod => mod.DiffEditor), { ssr: false });
 
 export default function ObfuscationStagesDialog({ visible, onHide, obfuscationResults }) {
     const [activeIndex, setActiveIndex] = useState(0);
+    const { theme } = useTheme();
 
     useEffect(() => {
         if (visible) {
             setActiveIndex(0);
         }
-    }, [visible]);
+    }, [visible, obfuscationResults]);
 
     const renderDiffEditor = (original, modified) => {
         return (
@@ -20,7 +22,7 @@ export default function ObfuscationStagesDialog({ visible, onHide, obfuscationRe
                 original={original}
                 modified={modified}
                 language="cpp"
-                theme="vs-dark"
+                theme={theme === 'light' ? 'vs' : 'vs-dark'}
                 options={{
                     readOnly: true,
                     renderSideBySide: true,
