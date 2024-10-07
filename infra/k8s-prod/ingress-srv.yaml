@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: ti.tw1st.link
+    - host: c.tw1st.link
       http:
         paths:
           - path: /api/users/?(.*)

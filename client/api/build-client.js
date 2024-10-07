@@ -5,7 +5,7 @@ const buildClient = ({ req }) => {
     // We are on the server
     const baseURL = process.env.NODE_ENV === 'development'
       ? 'http://ingress-nginx-controller.ingress-nginx.svc.cluster.local'
-      : 'https://ti.tw1st.link';
+      : 'https://c.tw1st.link';
     
     return axios.create({
       baseURL,

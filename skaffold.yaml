@@ -8,11 +8,8 @@ deploy:
 build:
   local:
     push: false
-  # googleCloudBuild:
-  #   projectId: ticketing-dev-411602
   artifacts:
-    - image: op40102/auth
-    # - image: us.gcr.io/ticketing-dev-411602/auth
+    - image: op40102/sfc-auth
       context: auth
       docker:
         dockerfile: Dockerfile
@@ -20,8 +17,7 @@ build:
         manual:
           - src: 'src/**/*.ts'
             dest: .
-    - image: op40102/client
-    # - image: us.gcr.io/ticketing-dev-411602/client
+    - image: op40102/sfc-client
       context: client
       docker:
         dockerfile: Dockerfile
@@ -31,7 +27,7 @@ build:
             dest: .
           - src: '**/*.css'
             dest: .
-    - image: your-docker-registry/llvm-backend
+    - image: op40102/sfc-llvm-backend
       context: llvm-backend
       docker:
         dockerfile: Dockerfile

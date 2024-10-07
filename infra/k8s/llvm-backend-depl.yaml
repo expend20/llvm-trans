@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: llvm-backend
-          image: your-docker-registry/llvm-backend
+          image: op40102/sfc-llvm-backend
           resources:
             limits:
               cpu: "1"

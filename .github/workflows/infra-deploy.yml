@@ -1,0 +1,26 @@
+name: Deploy Manifests
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'infra/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v3
+
+    - name: Configure kubectl
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > $HOME/.kube/config
+
+    - name: Deploy to Kubernetes
+      run: kubectl apply -f infra/k8s && kubectl apply -f infra/k8s-prod
