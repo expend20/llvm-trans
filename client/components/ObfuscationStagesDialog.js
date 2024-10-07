@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
+import { Button } from 'primereact/button';
 import dynamic from 'next/dynamic';
 import { useTheme } from '../hooks/use-theme';
 
@@ -37,6 +38,30 @@ export default function ObfuscationStagesDialog({ visible, onHide, obfuscationRe
         value: index
     }));
 
+    const renderStageSelector = () => (
+        <div className="mb-3 mt-2">
+            <div className="hidden md:flex flex-wrap gap-2">
+                {stageOptions.map((option) => (
+                    <Button
+                        key={option.value}
+                        label={option.label}
+                        onClick={() => setActiveIndex(option.value)}
+                        className={`p-button-sm ${activeIndex === option.value ? 'p-button-raised' : 'p-button-outlined'}`}
+                    />
+                ))}
+            </div>
+            <div className="md:hidden">
+                <Dropdown
+                    value={activeIndex}
+                    options={stageOptions}
+                    onChange={(e) => setActiveIndex(e.value)}
+                    placeholder="Select an obfuscation stage"
+                    className="w-full"
+                />
+            </div>
+        </div>
+    );
+
     return (
         <Dialog
             header="Obfuscation Stages"
@@ -47,15 +72,7 @@ export default function ObfuscationStagesDialog({ visible, onHide, obfuscationRe
         >
             {obfuscationResults.length > 0 ? (
                 <div className="flex flex-column h-full">
-                    <div className="mb-3 mt-2">
-                        <Dropdown
-                            value={activeIndex}
-                            options={stageOptions}
-                            onChange={(e) => setActiveIndex(e.value)}
-                            placeholder="Select an obfuscation stage"
-                            className="w-full md:w-20rem"
-                        />
-                    </div>
+                    {renderStageSelector()}
                     <div className="flex-grow-1 overflow-hidden">
                         <h3>{obfuscationResults[activeIndex].stageName}</h3>
                         {renderDiffEditor(

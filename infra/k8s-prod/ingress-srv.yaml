@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: c.tw1st.link
+    - host: shifting.codes
       http:
         paths:
           - path: /api/users/?(.*)
