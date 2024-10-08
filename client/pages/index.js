@@ -1,21 +1,18 @@
 import React from 'react';
-import ensureSignedInWithRedirect from '../api/redirect-to-signin';
-import MultiWindowCppEditors from './windows';
+import LandingPage from '../components/LandingPage';
 
-const LandingPage = ({ currentUser }) => {
+const IndexPage = () => {
 
   return (
     <>
-      <MultiWindowCppEditors />
+      <LandingPage />
     </>
   );
 };
 
-LandingPage.getInitialProps = async ( context, client, currentUser ) => {
-  // currently this is exposed without any authentication
-  // ensureSignedInWithRedirect(context, currentUser);
+IndexPage.getInitialProps = async ( context, client ) => {
   return {};
 };
 
-export default LandingPage;
+export default IndexPage;
 

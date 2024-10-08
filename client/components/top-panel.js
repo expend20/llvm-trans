@@ -1,7 +1,6 @@
 import React from 'react';
 import Router from 'next/router';
 import { Button } from 'primereact/button';
-import { Message } from 'primereact/message';
 import ThemeChanger from './theme-changer';
 
 const TopPanel = ({ currentUser }) => {
@@ -16,6 +15,18 @@ const TopPanel = ({ currentUser }) => {
           tooltip="Home"
           tooltipOptions={{ showDelay: 500, hideDelay: 150 }}
           onClick={() => Router.push('/')}
+        />
+        <Button className={buttonClassName}
+          icon="pi pi-shield"
+          tooltip="Obfuscate your code"
+          tooltipOptions={{ showDelay: 500, hideDelay: 150 }}
+          onClick={() => Router.push('/obfuscate')}
+        />
+        <Button className={buttonClassName}
+          icon="pi pi-envelope"
+          tooltip="Contact us"
+          tooltipOptions={{ showDelay: 500, hideDelay: 150 }}
+          onClick={() => Router.push('/contact')}
         />
       </div>
       <div className="flex items-center">
