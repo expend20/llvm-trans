@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useTheme } from '../hooks/use-theme';
 import ObfuscationOptionsDialog from '../components/ObfuscationOptionsDialog';
 import ObfuscationStagesDialog from '../components/ObfuscationStagesDialog';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
@@ -213,7 +214,7 @@ export default function MultiWindowCppEditors() {
                 llvmVersion,
                 obfuscationOptions,
             });
-            console.log(`Received response: ${JSON.stringify(response.data)}`);
+            //console.log(`Received response: ${JSON.stringify(response.data)}`);
             setObfuscationResults(response.data.obfuscationResults);
             // take the last obfuscation result (array)
             const lastObfuscationResult = response.data.obfuscationResults[response.data.obfuscationResults.length - 1];
@@ -324,19 +325,33 @@ export default function MultiWindowCppEditors() {
                     <span className="ml-2 hidden sm:inline font-semibold">Options</span>
                 </Button>
                 <Button 
-                    icon="pi pi-play"
+                    icon={isLoading ? null : "pi pi-play"}
                     className="p-button-raised p-button-primary" 
                     onClick={handleConvert}
                     disabled={isLoading}
                     iconPos="left"
                 >
-                    <span className="ml-2 hidden sm:inline font-semibold">{isLoading ? 'Converting...' : 'Convert'}</span>
+                    {isLoading && (
+                        <ProgressSpinner 
+                            style={{width: '20px', height: '20px'}} 
+                            strokeWidth="8" 
+                            animationDuration=".5s"
+                            fill="var(--surface-ground)"
+                            color="var(--primary-color)"
+                        />
+                    )}
+                    <span className="ml-2 font-semibold">
+                        {isLoading ? 'Transforming...' : 'Transform'}
+                    </span>
                 </Button>
                 <Button 
                     icon="pi pi-chart-line" 
                     onClick={() => setShowObfuscationStagesDialog(true)}
                     className="p-button-outlined"
                     iconPos="left"
+                    disabled={obfuscationResults.length === 0}
+                    tooltip="Transform your code first"
+                    tooltipOptions={{ disabled: obfuscationResults.length > 0, showOnDisabled: true }}
                 >
                     <span className="ml-2 hidden sm:inline font-semibold">Explore pipeline</span>
                 </Button>
@@ -492,6 +507,7 @@ export default function MultiWindowCppEditors() {
                 visible={showObfuscationStagesDialog}
                 onHide={() => setShowObfuscationStagesDialog(false)}
                 obfuscationResults={obfuscationResults}
+                originalCode={inputCode}  // Add this line
             />
         </>
     );

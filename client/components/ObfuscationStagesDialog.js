@@ -2,24 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
+import { Message } from 'primereact/message';
 import dynamic from 'next/dynamic';
 import { useTheme } from '../hooks/use-theme';
 
 const MonacoDiffEditor = dynamic(() => import('@monaco-editor/react').then(mod => mod.DiffEditor), { ssr: false });
 
-export default function ObfuscationStagesDialog({ visible, onHide, obfuscationResults }) {
-    const [activeIndex, setActiveIndex] = useState(0);
+export default function ObfuscationStagesDialog({ visible, onHide, obfuscationResults, originalCode }) {
+    const [activeIndex, setActiveIndex] = useState(1);
     const { theme } = useTheme();
 
     useEffect(() => {
-        setActiveIndex(0);
+        // Remove the console.log statement
+        setActiveIndex(1);
     }, [visible, obfuscationResults]);
 
     const renderDiffEditor = (original, modified) => {
         return (
             <MonacoDiffEditor
-                original={original}
-                modified={modified}
+                original={original || ''}  // Provide a default empty string if original is null or undefined
+                modified={modified || ''}  // Provide a default empty string if modified is null or undefined
                 language="cpp"
                 theme={theme === 'light' ? 'vs' : 'vs-dark'}
                 options={{
@@ -41,12 +43,12 @@ export default function ObfuscationStagesDialog({ visible, onHide, obfuscationRe
     const renderStageSelector = () => (
         <div className="mb-3 mt-2">
             <div className="hidden md:flex flex-wrap gap-2">
-                {stageOptions.map((option) => (
+                {stageOptions.map((option, index) => (
                     <Button
                         key={option.value}
                         label={option.label}
                         onClick={() => setActiveIndex(option.value)}
-                        className={`p-button-sm ${activeIndex === option.value ? 'p-button-raised' : 'p-button-outlined'}`}
+                        className={`p-button-sm ${index === 0 ? 'p-button-secondary' : activeIndex === option.value ? 'p-button-raised' : 'p-button-outlined'}`}
                     />
                 ))}
             </div>
@@ -74,15 +76,14 @@ export default function ObfuscationStagesDialog({ visible, onHide, obfuscationRe
                 <div className="flex flex-column h-full">
                     {renderStageSelector()}
                     <div className="flex-grow-1 overflow-hidden">
-                        <h3>{obfuscationResults[activeIndex].stageName}</h3>
                         {renderDiffEditor(
-                            activeIndex === 0 ? obfuscationResults[activeIndex].input : obfuscationResults[activeIndex - 1].output,
-                            obfuscationResults[activeIndex].output
+                            activeIndex === 0 ? (originalCode || '') : (obfuscationResults[activeIndex - 1]?.output || ''),
+                            obfuscationResults[activeIndex]?.output || ''
                         )}
                     </div>
                 </div>
             ) : (
-                <p>No obfuscation results available.</p>
+                <Message severity="info" text="To view the obfuscation pipeline, please transform your code first." />
             )}
         </Dialog>
     );
