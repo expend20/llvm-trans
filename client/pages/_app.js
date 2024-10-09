@@ -46,7 +46,7 @@ function MyApp({ Component, pageProps, currentUser }) {
       <Background />
       <div className="flex flex-column h-screen">
         <TopPanel currentUser={currentUser} />
-        <div className="flex-grow-1 overflow-hidden">
+        <div className="flex-grow-1 overflow-auto">
           <Component
             currentUser={currentUser}
             toastRef={toastRef}

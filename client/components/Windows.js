@@ -7,6 +7,7 @@ import { useTheme } from '../hooks/use-theme';
 import ObfuscationOptionsDialog from '../components/ObfuscationOptionsDialog';
 import ObfuscationStagesDialog from '../components/ObfuscationStagesDialog';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { SplitButton } from 'primereact/splitbutton';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
@@ -261,7 +262,7 @@ export default function MultiWindowCppEditors() {
 
             // Calculate available space after accounting for shadows
             const availableWidth = containerWidth - SHADOW_SIZE * 2; // 3 shadows: left, middle, right
-            const availableHeight = containerHeight - SHADOW_SIZE * 2; // 3 shadows: top, middle, bottom
+            const availableHeight = containerHeight; // 3 shadows: top, middle, bottom
 
             setWindows([
                 { 
@@ -312,48 +313,76 @@ export default function MultiWindowCppEditors() {
         });
     };
 
+    const getWindowsDropdownItems = useCallback(() => {
+        const items = [{
+            label: 'Reset windows layout',
+            icon: 'pi pi-refresh',
+            command: resetWindowsLayout
+        }];
+
+        items.push({ separator: true });
+
+        items.push(...windows.map(window => ({
+            label: window.title,
+            icon: window.hidden ? 'pi pi-eye-slash' : 'pi pi-eye',
+            command: () => toggleHide(window.id)
+        })));
+
+        return items;
+    }, [windows]);
+
     return (
         <>
-            <div className="sticky mt-2 top-0 z-5 py-1 px-2 flex gap-3 bg-surface-0">
-                <Button 
-                    icon="pi pi-cog" 
-                    onClick={() => setShowOptionsDialog(true)}
-                    className="p-button-outlined"
-                    iconPos="left"
-                >
-                    <span className="ml-2 hidden sm:inline font-semibold">Options</span>
-                </Button>
-                <Button 
-                    icon={isLoading ? null : "pi pi-play"}
-                    className="p-button-raised p-button-primary" 
-                    onClick={handleConvert}
-                    disabled={isLoading}
-                    iconPos="left"
-                >
-                    {isLoading && (
-                        <ProgressSpinner 
-                            style={{width: '20px', height: '20px'}} 
-                            strokeWidth="8" 
-                            animationDuration=".5s"
-                            fill="var(--surface-ground)"
-                            color="var(--primary-color)"
-                        />
-                    )}
-                    <span className="ml-2 font-semibold">
-                        {isLoading ? 'Transforming...' : 'Transform'}
-                    </span>
-                </Button>
-                <Button 
-                    icon="pi pi-chart-line" 
-                    onClick={() => setShowObfuscationStagesDialog(true)}
-                    className="p-button-outlined"
-                    iconPos="left"
-                    disabled={obfuscationResults.length === 0}
-                    tooltip="Transform your code first"
-                    tooltipOptions={{ disabled: obfuscationResults.length > 0, showOnDisabled: true }}
-                >
-                    <span className="ml-2 hidden sm:inline font-semibold">Explore pipeline</span>
-                </Button>
+            <div className="sticky mt-2 top-0 z-5 py-1 px-2 flex gap-3 bg-surface-0 justify-between items-center">
+                <div className="flex gap-3">
+                    <Button 
+                        icon="pi pi-cog" 
+                        onClick={() => setShowOptionsDialog(true)}
+                        className="p-button-outlined"
+                        iconPos="left"
+                    >
+                        <span className="ml-2 hidden sm:inline font-semibold">Options</span>
+                    </Button>
+                    <Button 
+                        icon={isLoading ? null : "pi pi-play"}
+                        className="p-button-raised p-button-primary" 
+                        onClick={handleConvert}
+                        disabled={isLoading}
+                        iconPos="left"
+                    >
+                        {isLoading && (
+                            <ProgressSpinner 
+                                style={{width: '20px', height: '20px'}} 
+                                strokeWidth="8" 
+                                animationDuration=".5s"
+                                fill="var(--surface-ground)"
+                                color="var(--primary-color)"
+                            />
+                        )}
+                        <span className="ml-2 font-semibold">
+                            {isLoading ? 'Transforming...' : 'Transform'}
+                        </span>
+                    </Button>
+                    <Button 
+                        icon="pi pi-chart-line" 
+                        onClick={() => setShowObfuscationStagesDialog(true)}
+                        className="p-button-outlined"
+                        iconPos="left"
+                        disabled={obfuscationResults.length === 0}
+                        tooltip="Transform your code first"
+                        tooltipOptions={{ disabled: obfuscationResults.length > 0, showOnDisabled: true }}
+                    >
+                        <span className="ml-2 hidden sm:inline font-semibold">Explore pipeline</span>
+                    </Button>
+                </div>
+                <div className="ml-auto">
+                    <SplitButton 
+                        label="Windows" 
+                        icon="pi pi-window" 
+                        model={getWindowsDropdownItems()} 
+                        className="p-button-outlined"
+                    />
+                </div>
             </div>
             <div ref={containerRef} style={{ position: 'relative', width: '100%', height: 'calc(100vh - 150px)' }}>
                 {windows.map((window) => (
@@ -480,20 +509,6 @@ export default function MultiWindowCppEditors() {
                 ))}
             </div>
             <ContextMenu model={getContextMenuItems(activeWindowId)} ref={contextMenuRef} />
-            <div className="fixed bottom-0 left-0 right-0 z-5 py-1 px-2 flex gap-3 bg-surface-0">
-                <div className="flex-grow flex gap-3">
-                    {windows.sort((a, b) => a.id - b.id).map((window) => (
-                        <span 
-                            key={window.id}
-                            className={`cursor-pointer text-sm ${window.hidden ? 'text-300' : 'text-primary'}`}
-                            onClick={() => toggleHide(window.id)}
-                            onContextMenu={(e) => handleContextMenu(e, window.id)}
-                        >
-                            {window.title}
-                        </span>
-                    ))}
-                </div>
-            </div>
             <ObfuscationOptionsDialog 
                 visible={showOptionsDialog} 
                 onHide={() => setShowOptionsDialog(false)}

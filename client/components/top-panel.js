@@ -31,6 +31,7 @@ const TopPanel = ({ currentUser }) => {
       </div>
       <div className="flex items-center">
         <ThemeChanger />
+        {/* no login for now 
         {currentUser && (
           <Button className={buttonClassName}
             icon="pi pi-user"
@@ -53,6 +54,7 @@ const TopPanel = ({ currentUser }) => {
             tooltipOptions={{ position: 'left', showDelay: 500, hideDelay: 150 }}
           />
         )}
+        */}
       </div>
     </nav>
   );
