@@ -29,7 +29,11 @@ const ContactForm = () => {
 
   return (
     <Card className="shadow-lg m-4">
-      <h2 className="text-2xl font-bold mb-4">Contact Us</h2>
+      <h2 className="text-3xl font-bold mb-4">Get in Touch 💌</h2>
+      <p className="mb-4">
+        We'd love to hear from you! 😊 Whether you have questions about our obfuscation services or want to provide feedback,
+        please don't hesitate to reach out using the form below. 🤗
+      </p>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="name" className="block mb-2">Name</label>
