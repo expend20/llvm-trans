@@ -377,8 +377,8 @@ export default function MultiWindowCppEditors() {
                 </div>
                 <div className="ml-auto">
                     <SplitButton 
-                        label="Windows" 
-                        icon="pi pi-window" 
+                        label={<span className="hidden sm:inline">Windows</span>}
+                        icon="pi pi-clone" 
                         model={getWindowsDropdownItems()} 
                         className="p-button-outlined"
                     />
