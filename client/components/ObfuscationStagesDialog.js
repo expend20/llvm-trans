@@ -9,12 +9,12 @@ import { useTheme } from '../hooks/use-theme';
 const MonacoDiffEditor = dynamic(() => import('@monaco-editor/react').then(mod => mod.DiffEditor), { ssr: false });
 
 export default function ObfuscationStagesDialog({ visible, onHide, obfuscationResults, originalCode }) {
-    const [activeIndex, setActiveIndex] = useState(1);
+    const [activeIndex, setActiveIndex] = useState(0);
     const { theme } = useTheme();
 
     useEffect(() => {
         // Remove the console.log statement
-        setActiveIndex(1);
+        setActiveIndex(obfuscationResults.length > 1 ? 1 : 0);
     }, [visible, obfuscationResults]);
 
     const renderDiffEditor = (original, modified) => {

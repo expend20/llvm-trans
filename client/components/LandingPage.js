@@ -36,8 +36,10 @@ export default function LandingPage() {
               <AccordionTab header="🔍 Step-by-Step Exploration">
                 <p>Learn how obfuscation works by exploring our pipeline, gaining insights into each step of the process.</p>
               </AccordionTab>
-              <AccordionTab header="🚀 Advanced Features">
-                <p>Contact us to learn about our more advanced features tailored for enterprise-level security needs.</p>
+              <AccordionTab header="🚀 Propose a feature">
+                <p>
+                  We are currently looking for new features to add to our obfuscation tool. If you have an idea for a feature, please let us know.
+                </p>
               </AccordionTab>
             </Accordion>
           </Card>

@@ -8,6 +8,8 @@ import ObfuscationOptionsDialog from '../components/ObfuscationOptionsDialog';
 import ObfuscationStagesDialog from '../components/ObfuscationStagesDialog';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { SplitButton } from 'primereact/splitbutton';
+import { Tooltip } from 'primereact/tooltip';
+import { Menu } from 'primereact/menu';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
@@ -23,7 +25,7 @@ export default function MultiWindowCppEditors() {
     const [activeWindowId, setActiveWindowId] = useState(null);
 
     const { theme } = useTheme();
-    const [inputCode, setInputCode] = useState(defaultCppCode);
+    const [inputCode, setInputCode] = useState(cppPrintfTemplate);
     const [outputCode, setOutputCode] = useState('');
     const [consoleOutput, setConsoleOutput] = useState('');
     const [llvmVersion, setLlvmVersion] = useState('18');
@@ -40,6 +42,28 @@ export default function MultiWindowCppEditors() {
     });
     const [showObfuscationStagesDialog, setShowObfuscationStagesDialog] = useState(false);
     const [obfuscationResults, setObfuscationResults] = useState([]);
+
+    const [templateMenuVisible, setTemplateMenuVisible] = useState(false);
+    const templateMenuRef = useRef(null);
+
+    const templateItems = [
+        {
+            label: 'Printf Example',
+            icon: 'pi pi-file',
+            command: () => {
+                setInputCode(cppPrintfTemplate);
+                setTemplateMenuVisible(false);
+            }
+        },
+        {
+            label: 'Xtea Encryption',
+            icon: 'pi pi-file-o',
+            command: () => {
+                setInputCode(cppXteaEncryptionTemplate);
+                setTemplateMenuVisible(false);
+            }
+        }
+    ];
 
     useEffect(() => {
         if (containerRef.current) {
@@ -331,6 +355,31 @@ export default function MultiWindowCppEditors() {
         return items;
     }, [windows]);
 
+    const handlePaste = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            setInputCode(text);
+        } catch (err) {
+            console.error('Failed to read clipboard contents: ', err);
+        }
+    };
+
+    const handleCopy = () => {
+        // copy outputCode to clipboard
+        navigator.clipboard.writeText(outputCode);
+    }; 
+
+    // download outputCode as an "obfuscated.ll" file
+    const handleDownload = () => {
+        const blob = new Blob([outputCode], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'obfuscated.ll';
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     return (
         <>
             <div className="sticky mt-2 top-0 z-5 py-1 px-2 flex gap-3 bg-surface-0 justify-between items-center">
@@ -414,24 +463,90 @@ export default function MultiWindowCppEditors() {
                                 toggleMaximizeMinimize(window.id);
                             }}
                         >
-                            <span className="ml-2 font-semibold">{window.title}</span>
+                            <div className="flex items-center">
+                                <span className="ml-2 font-semibold">{window.title}</span>
+                                {window.id === 1 && (
+                                    <>
+                                        <Tooltip target=".paste-icon" />
+                                        <i
+                                            className="pi pi-clipboard ml-2 paste-icon"
+                                            style={{ cursor: 'pointer' }} 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handlePaste();
+                                            }}
+                                            data-pr-tooltip="Paste"
+                                            data-pr-position="bottom"
+                                        />
+                                        <Tooltip target=".template-icon" />
+                                        <i
+                                            className="pi pi-file-plus ml-2 template-icon"
+                                            style={{ cursor: 'pointer' }} 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setTemplateMenuVisible(true);
+                                                templateMenuRef.current.toggle(e);
+                                            }}
+                                            data-pr-tooltip="Template"
+                                            data-pr-position="bottom"
+                                        />
+                                        <Menu model={templateItems} popup ref={templateMenuRef} />
+                                    </>
+                                )}
+                                {window.id === 2 && (
+                                    <>
+                                        <Tooltip target=".copy-icon" />
+                                        <i
+                                            className="pi pi-clipboard ml-2 copy-icon"
+                                            style={{ cursor: 'pointer' }} 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleCopy();
+                                            }}
+                                            data-pr-tooltip="Copy"
+                                            data-pr-position="bottom"
+                                        />
+                                        <Tooltip target=".download-icon" />
+                                        <i
+                                            className="pi pi-download ml-2 download-icon"
+                                            style={{ cursor: 'pointer' }} 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDownload();
+                                            }}
+                                            data-pr-tooltip="Download"
+                                            data-pr-position="bottom"
+                                        />
+                                    </>
+                                )}
+                            </div>
                             <div className="flex">
-                                <i 
-                                    className="pi pi-minus mr-2" 
-                                    style={{ cursor: 'pointer' }} 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleHide(window.id);
-                                    }} 
-                                />
-                                <i 
-                                    className={`pi ${window.maximized ? 'pi-window-minimize' : 'pi-window-maximize'} mr-2`}
-                                    style={{ cursor: 'pointer' }} 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleMaximize(window.id);
-                                    }} 
-                                />
+                                <>
+                                    <Tooltip target=".minimize-icon" />
+                                    <i 
+                                        className="pi pi-minus mr-2 minimize-icon" 
+                                        style={{ cursor: 'pointer' }} 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleHide(window.id);
+                                        }} 
+                                        data-pr-tooltip="Hide"
+                                        data-pr-position="bottom"
+                                    />
+                                </>
+                                <>
+                                    <Tooltip target=".maximize-icon" />
+                                    <i 
+                                        className={`pi ${window.maximized ? 'pi-window-minimize' : 'pi-window-maximize'} mr-2 maximize-icon`}
+                                        style={{ cursor: 'pointer' }} 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleMaximize(window.id);
+                                        }} 
+                                        data-pr-tooltip={window.maximized ? "Restore" : "Maximize"}
+                                        data-pr-position="left"
+                                    />
+                                </>
                             </div>
                         </div>
                         <div className="surface-0 h-full">
@@ -528,7 +643,7 @@ export default function MultiWindowCppEditors() {
 }
 
 // Default C++ code
-const defaultCppCode = `
+const cppPrintfTemplate = `
 #include <stdio.h>
 
 __attribute__((noinline)) // to showcase indirect call feature
@@ -542,3 +657,59 @@ int main() {
   return 0;
 }
 `;
+
+const cppXteaEncryptionTemplate = `
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+// noinline is needed to test indirect call feature
+__attribute__((noinline))
+static void xtea_encrypt(uint32_t v[2], const uint32_t key[4], uint32_t num_rounds) {
+    uint32_t v0 = v[0], v1 = v[1], sum = 0, delta = 0x9E3779B9;
+    for (uint32_t i = 0; i < num_rounds; i++) {
+        v0 += (((v1 << 4) ^ (v1 >> 5)) + v1) ^ (sum + key[sum & 3]);
+        sum += delta;
+        v1 += (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + key[(sum >> 11) & 3]);
+    }
+    v[0] = v0; v[1] = v1;
+}
+
+// noinline is needed to test indirect call feature
+__attribute__((noinline))
+static void xtea_decrypt(uint32_t v[2], const uint32_t key[4], uint32_t num_rounds) {
+    uint32_t v0 = v[0], v1 = v[1], delta = 0x9E3779B9;
+    uint32_t sum = delta * num_rounds;
+    for (uint32_t i = 0; i < num_rounds; i++) {
+        v1 -= (((v0 << 4) ^ (v0 >> 5)) + v0) ^ (sum + key[(sum >> 11) & 3]);
+        sum -= delta;
+        v0 -= (((v1 << 4) ^ (v1 >> 5)) + v1) ^ (sum + key[sum & 3]);
+    }
+    v[0] = v0; v[1] = v1;
+}
+
+int main() {
+    uint32_t key[4] = {0x01234567, 0x89ABCDEF, 0xFEDCBA98, 0x76543210};
+    uint32_t v[2] = {0, 0};
+    uint32_t num_rounds = 32;  // Standard number of rounds for XTEA
+    
+    // Message to encrypt (8 bytes / 64 bits)
+    char message[] = "HelloWld";
+    
+    // Copy message to v array
+    memcpy(v, message, 8);
+    
+    printf("Original message: %.8s\\n", (char*)v);
+    
+    // Encrypt
+    xtea_encrypt(v, key, num_rounds);
+    printf("Encrypted: 0x%08X 0x%08X\\n", v[0], v[1]);
+    
+    // Decrypt
+    xtea_decrypt(v, key, num_rounds);
+    printf("Decrypted message: %.8s\\n", (char*)v);
+    
+    return 0;
+}
+`;
+
