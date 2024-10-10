@@ -8,8 +8,8 @@ import Link from 'next/link'
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-100 to-indigo-200">
-      <main className="flex-grow container mx-auto px-4 py-4">
+    <div className="flex flex-col bg-gradient-to-br from-blue-100 to-indigo-200">
+      <main className="flex-grow container mx-auto px-4 py-4" style={{ maxWidth: '800px' }}>
         <section className="mb-4">
           <Card className="shadow-lg">
             <div className="flex flex-col md:flex-row items-center">
