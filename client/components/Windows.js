@@ -246,8 +246,8 @@ export default function MultiWindowCppEditors() {
             setConsoleOutput(response.data.executionOutput);
         } catch (error) {
             console.error('Compilation failed:', error);
-            setOutputCode('Compilation failed. Please check your input and try again.');
-            setConsoleOutput('Error: Compilation failed');
+            setOutputCode('Compilation failed.');
+            setConsoleOutput(`Error details:\n ${error.response.data.details}`);
         } finally {
             setIsLoading(false);
         }
