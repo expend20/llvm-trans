@@ -16,7 +16,7 @@ const TopPanel = ({ currentUser }) => {
           tooltipOptions={{ showDelay: 500, hideDelay: 150 }}
           onClick={() => Router.push('/')}
         />
-        <Button className={buttonClassName}
+        <Button className="m-1 custom-hover-effect"
           icon="pi pi-shield"
           tooltip="Obfuscate your code"
           tooltipOptions={{ showDelay: 500, hideDelay: 150 }}

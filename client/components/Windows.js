@@ -408,7 +408,7 @@ export default function MultiWindowCppEditors() {
                                 color="var(--primary-color)"
                             />
                         )}
-                        <span className="ml-2 font-semibold">
+                        <span className="ml-2 font-semibold hidden sm:inline">
                             {isLoading ? 'Transforming...' : 'Transform'}
                         </span>
                     </Button>
@@ -712,4 +712,3 @@ int main() {
     return 0;
 }
 `;
-
