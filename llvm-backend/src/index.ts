@@ -123,8 +123,11 @@ app.post('/api/llvm/compile', async (req, res) => {
     }
 
     // Execute the compiled code
-    const executeResult = await executeCommand(executableFile);
+    const executeResult = await executeCommand(`/app/wrapper ${executableFile}`);
     executionOutput = executeResult.output || executeResult.error;
+    if (!executionOutput) {
+      executionOutput = '<No output>';
+    }
     console.log(`Execution output: ${executionOutput}`);
 
     res.json({ obfuscationResults: results, executionOutput });
