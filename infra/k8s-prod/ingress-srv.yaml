@@ -26,7 +26,7 @@ spec:
                 name: llvm-backend-srv
                 port:
                   number: 3000
-          - path: /notifier/?(.*)
+          - path: /api/notifier/?(.*)
             pathType: Prefix
             backend:
               service:
