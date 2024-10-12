@@ -7,7 +7,7 @@ import path from 'path';
 const app = express();
 app.use(json());
 
-app.post('/api/llvm/compile', async (req, res) => {
+app.post('/api/llvm-backend', async (req, res) => {
   console.log(`Received request: ${JSON.stringify(req.body)}`);
   const { code, llvmVersion, obfuscationOptions } = req.body;
 

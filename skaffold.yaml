@@ -35,3 +35,11 @@ build:
         manual:
           - src: 'src/**/*.ts'
             dest: .
+    - image: op40102/sfc-notifier
+      context: notifier
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: 'src/**/*.ts'
+            dest: .

@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifier-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notifier
+  template:
+    metadata:
+      labels:
+        app: notifier
+    spec:
+      containers:
+        - name: notifier
+          image: op40102/sfc-notifier
+          ports:
+            - containerPort: 3000
+          env:
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: email-config
+                  key: SMTP_HOST
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: email-config
+                  key: SMTP_PORT
+            - name: EMAIL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: email-config
+                  key: EMAIL_USER
+            - name: EMAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: email-config
+                  key: EMAIL_PASSWORD
+            - name: EMAIL_DESTINATION
+              valueFrom:
+                secretKeyRef:
+                  name: email-config
+                  key: EMAIL_DESTINATION
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notifier-srv
+spec:
+  selector:
+    app: notifier
+  ports:
+    - name: notifier
+      protocol: TCP
+      port: 3000
+      targetPort: 3000

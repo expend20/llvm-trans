@@ -233,7 +233,7 @@ export default function MultiWindowCppEditors() {
     const handleConvert = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await axios.post('/api/llvm/compile', {
+            const response = await axios.post('/api/llvm-backend', {
                 code: inputCode,
                 llvmVersion,
                 obfuscationOptions,

@@ -19,11 +19,18 @@ spec:
                 name: auth-srv
                 port:
                   number: 3000
-          - path: /api/llvm/?(.*)
+          - path: /api/llvm-backend/?(.*)
             pathType: Prefix
             backend:
               service:
                 name: llvm-backend-srv
+                port:
+                  number: 3000
+          - path: /api/notifier/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: notifier-srv
                 port:
                   number: 3000
           - path: /?(.*)

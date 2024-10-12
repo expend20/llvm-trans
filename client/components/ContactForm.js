@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
+import { Toast } from 'primereact/toast';
 import Link from 'next/link';
+import axios from 'axios';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -11,6 +14,8 @@ const ContactForm = () => {
     email: '',
     message: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const toast = useRef(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,16 +25,32 @@ const ContactForm = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically send the form data to your backend
-    console.log('Form submitted:', formData);
-    // Reset form after submission
-    setFormData({ name: '', email: '', message: '' });
+    setIsLoading(true);
+    try {
+      const response = await axios.post('/api/notifier', {
+        subject: 'New Contact Form Submission',
+        text: `Name: ${formData.name}\nEmail: ${formData.email}\nMessage: ${formData.message}`,
+      });
+
+      if (response.status === 200) {
+        toast.current.show({ severity: 'success', summary: 'Success', detail: 'Message sent successfully!', life: 3000 });
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        throw new Error('Failed to send message');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to send message. Please try again.', life: 3000 });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="flex flex-col bg-gradient-to-br from-blue-100 to-indigo-200">
+      <Toast ref={toast} />
       <main className="flex-grow container mx-auto px-4 py-4" style={{ maxWidth: '800px' }}>
       <Card className="shadow-lg m-4 w-2/3 mx-auto">
         <h2 className="text-3xl font-bold mb-4">Get in Touch 💌</h2>
@@ -74,8 +95,25 @@ const ContactForm = () => {
               className="w-full"
             />
           </div>
-          <Button type="submit" label="Send Message" className="p-button-raised p-button-primary" />
-          </form>
+          <div className="mb-4">
+            <Button 
+              type="submit" 
+              label={isLoading ? 'Sending...' : 'Send Message'} 
+              className="p-button-raised p-button-primary" 
+              disabled={isLoading}
+              icon={isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-send'}
+            />
+            {isLoading && (
+              <ProgressSpinner 
+                style={{width: '30px', height: '30px'}} 
+                strokeWidth="8" 
+                fill="var(--surface-ground)" 
+                animationDuration=".5s"
+                className="ml-2"
+              />
+            )}
+          </div>
+        </form>
         </Card>
       </main>
     </div>
