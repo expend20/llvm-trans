@@ -103,15 +103,6 @@ const ContactForm = () => {
               disabled={isLoading}
               icon={isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-send'}
             />
-            {isLoading && (
-              <ProgressSpinner 
-                style={{width: '30px', height: '30px'}} 
-                strokeWidth="8" 
-                fill="var(--surface-ground)" 
-                animationDuration=".5s"
-                className="ml-2"
-              />
-            )}
           </div>
         </form>
         </Card>

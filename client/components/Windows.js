@@ -393,21 +393,12 @@ export default function MultiWindowCppEditors() {
                         <span className="ml-2 hidden sm:inline font-semibold">Options</span>
                     </Button>
                     <Button 
-                        icon={isLoading ? null : "pi pi-play"}
+                        icon={isLoading ? 'pi pi-spin pi-spinner' : 'pi pi-play'}
                         className="p-button-raised p-button-primary" 
                         onClick={handleConvert}
                         disabled={isLoading}
                         iconPos="left"
                     >
-                        {isLoading && (
-                            <ProgressSpinner 
-                                style={{width: '20px', height: '20px'}} 
-                                strokeWidth="8" 
-                                animationDuration=".5s"
-                                fill="var(--surface-ground)"
-                                color="var(--primary-color)"
-                            />
-                        )}
                         <span className="ml-2 font-semibold hidden sm:inline">
                             {isLoading ? 'Transforming...' : 'Transform'}
                         </span>
