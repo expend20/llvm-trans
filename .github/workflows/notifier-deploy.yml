@@ -1,4 +1,4 @@
-name: Deploy Auth Service
+name: Deploy Notifier Service
 
 on:
   push:
