@@ -50,3 +50,4 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Notifier listening on port ${port}`);
 });
+
