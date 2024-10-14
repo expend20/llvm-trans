@@ -56,8 +56,8 @@ const ContactForm = () => {
         <h2 className="text-3xl font-bold mb-4">Get in Touch 💌</h2>
         <p className="text-lg mb-4">
           We'd love to hear from you! 😊 Whether you have questions about our obfuscation services, want to provide feedback,
-          propose an exciting new feature 🌟, or enquire about custom research & development 🔬, 
-          please don't hesitate to reach out using the form below. We're here to innovate with you! 🚀🤗
+          or propose an exciting new feature 🌟, please don't hesitate to reach out using the form below. 
+          We're here to innovate with you! 🚀🤗
         </p>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">

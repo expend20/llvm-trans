@@ -14,9 +14,9 @@ export default function LandingPage() {
           <Card className="shadow-lg">
             <div className="flex flex-col md:flex-row items-center">
               <div className="md:w-1/2 pr-4">
-                <h2 className="text-3xl font-bold mb-4">🛡️ Obfuscate Your Binary Code with LLVM</h2>
+                <h2 className="text-3xl font-bold mb-4">🛡️ Obfuscate Your Binary Online</h2>
                 <p className="text-lg mb-4">
-                  Protect your intellectual property with our advanced LLVM-based obfuscation techniques.
+                  Explore LLVM-based obfuscation tools to protect your code and discover the inner workings of this process.
                 </p>
                 <Link href="/obfuscate">
                   <Button label="Get Started 🚀" className="p-button-raised p-button-primary" />
@@ -31,14 +31,16 @@ export default function LandingPage() {
             <h3 className="text-2xl font-semibold mb-4">🔑 Key Features</h3>
             <Accordion>
               <AccordionTab header="🔒 Pluto-based Obfuscation Passes">
-                <p>Our current obfuscation passes are based on Pluto, providing robust protection for your code.</p>
+                <p> Our current obfuscation passes incorporate <a href="https://github.com/bluesadi/Pluto/">Pluto</a>, 
+                providing robust protection for your code.  We'll be adding more passes in the near future, so stay tuned!
+                </p>
               </AccordionTab>
               <AccordionTab header="🔍 Step-by-Step Exploration">
-                <p>Learn how obfuscation works by exploring our pipeline, gaining insights into each step of the process.</p>
+                <p> Learn how obfuscation works by exploring our pipeline, gaining insights into each step of the process.</p>
               </AccordionTab>
               <AccordionTab header="🚀 Propose a feature">
-                <p>
-                  We are currently looking for new features to add to our obfuscation tool. If you have an idea for a feature, please let us know.
+                <p> We are currently looking for new features to add to our obfuscation tool. If you have an idea for a feature, 
+                  please let us know.
                 </p>
               </AccordionTab>
             </Accordion>
@@ -51,8 +53,8 @@ export default function LandingPage() {
               <div className="md:w-1/2 pr-4">
                 <h3 className="text-2xl font-semibold mb-4">💬 We Value Your Feedback</h3>
                 <p className="mb-4">
-                  Your input is crucial in helping us improve our obfuscation tools. We strive to provide the best possible
-                  solution for your code protection needs.
+                  We highly value your feedback as it's essential for enhancing the product. Our goal is to
+                  deliver an exceptional experience tailored to your needs.
                 </p>
                 <Link href="/contact"> 
                   <Button label="Provide Feedback 📝" className="p-button-raised p-button-secondary" />
