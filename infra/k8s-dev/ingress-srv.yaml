@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: llvm-trans.local
+    - host: shifting.codes.local
       http:
         paths:
           - path: /api/users/?(.*)

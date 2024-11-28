@@ -3,6 +3,7 @@ import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
 import { Button } from 'primereact/button';
 import { Message } from 'primereact/message';
+import { Tooltip } from 'primereact/tooltip';
 import dynamic from 'next/dynamic';
 import { useTheme } from '../hooks/use-theme';
 
@@ -46,9 +47,22 @@ export default function ObfuscationStagesDialog({ visible, onHide, obfuscationRe
                 {stageOptions.map((option, index) => (
                     <Button
                         key={option.value}
-                        label={option.label}
+                        label={
+                            <span className="flex align-items-center gap-2">
+                                {index <= activeIndex ? (
+                                    <i className="pi pi-check-circle" />
+                                ) : (
+                                    <i className="pi pi-circle" />
+                                )}
+                                {option.label}
+                            </span>
+                        }
                         onClick={() => setActiveIndex(option.value)}
-                        className={`p-button-sm ${index === 0 ? 'p-button-secondary' : activeIndex === option.value ? 'p-button-raised' : 'p-button-outlined'}`}
+                        className={`p-button-sm ${
+                            index <= activeIndex 
+                                ? 'p-button-raised' 
+                                : 'p-button-outlined'
+                        }`}
                     />
                 ))}
             </div>
@@ -66,7 +80,19 @@ export default function ObfuscationStagesDialog({ visible, onHide, obfuscationRe
 
     return (
         <Dialog
-            header="Obfuscation Stages"
+            header={
+                <div className="flex align-items-center gap-2">
+                    <span>Obfuscation Stages</span>
+                    <i 
+                        className="pi pi-info-circle cursor-pointer text-sm"
+                        data-pr-tooltip="Obfuscation passes are applied sequentially based on your Options menu selections. The process begins with translating C/C++ code into LLVM IR (shown in the 'original' stage). The diff viewer shows the previous stage's LLVM IR on the left and the current pass's modifications on the right. Note that passes cannot currently be reordered or repeated."
+                        data-pr-position="right"
+                        data-pr-at="right+5 top"
+                        style={{ color: 'var(--primary-color)' }}
+                    />
+                    <Tooltip target=".pi-info-circle" />
+                </div>
+            }
             visible={visible}
             style={{ width: '90vw', height: '90vh' }}
             onHide={onHide}
